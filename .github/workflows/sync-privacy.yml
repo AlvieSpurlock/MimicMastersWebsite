@@ -1,0 +1,20 @@
+name: Sync Privacy Policy
+on:
+  schedule: [{cron: '0 */6 * * *'}]
+  workflow_dispatch:
+  push: {paths: ['scripts/sync_privacy.py']}
+permissions: {contents: write}
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install markdown
+      - run: python scripts/sync_privacy.py
+      - run: |
+          git config user.name "privacy-sync[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/privacy-content.html
+          git diff --cached --quiet || (git commit -m "Sync privacy policy from Google Doc" && git push)
