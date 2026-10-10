@@ -86,3 +86,6 @@ a.pcard:hover{background:#ffffff1a}
 @media(max-width:420px){.pcard{flex-direction:column}.pcard img{width:100%}}
 .sub a.pcard,.sub a.pcard:hover{color:#fff;text-decoration:none}.pcard{margin-bottom:.8rem}.pcard p{margin:0 0 .35rem}
 .sub li>ol{margin:.4rem 0 .2rem;padding-left:1.4rem}.sub li>ol li{margin:.2rem 0}
+
+.mode-shot{display:block;max-height:560px;width:auto;max-width:100%;margin:.8rem auto 0;object-fit:contain;border-radius:14px}
+.mode-links a[aria-current]{background:var(--pk);border-color:var(--pk)}
