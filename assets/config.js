@@ -1,0 +1,14 @@
+/* EDIT ME: site-wide settings. Leave a link empty ("") and its button shows "Link coming soon". */
+window.SITE={
+  links:{
+    discord:"https://discord.gg/3SWjw83hHQ",   // e.g. https://discord.gg/yourInvite
+    youtubeBusiness:"https://www.youtube.com/@Hatters_Mania",   // your business channel URL
+    youtubePersonal:"https://www.youtube.com/@HattersMania",   // your personal channel URL
+    twitch:"https://www.twitch.tv/hattersmania"     // e.g. https://www.twitch.tv/yourChannel
+  },
+  // Optional live data: Google Sheets > File > Share > Publish to web > CSV link.
+  // If set, it is used instead of data/stores.csv / data/games.csv (falls back to them on failure).
+  nearbyMiles:50,   // Store Network: how far "nearby" reaches
+  storesCsvUrl:"https://docs.google.com/spreadsheets/d/1I-3HYszsSXz9xXAMGkrx1USPITzDeKpg9hPNqrY4rl8/edit?usp=sharing",
+  gamesCsvUrl:"https://docs.google.com/spreadsheets/d/1jiBBk1qjRfI4BG0QtHvUte_sYPmSXDYixHXfyW097Z8/edit?usp=sharing"
+};

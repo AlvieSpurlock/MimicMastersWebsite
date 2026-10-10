@@ -1,0 +1,77 @@
+/* Store Network + Ethical Indie Dev Coalition lookup. Location is typed by the visitor, used only in this browser, never sent or stored. */
+(()=>{
+const root=document.getElementById('net');if(!root)return;
+const S=window.SITE||{},isStore=root.dataset.mode==='stores';
+const ST=Object.fromEntries('AL Alabama|AK Alaska|AZ Arizona|AR Arkansas|CA California|CO Colorado|CT Connecticut|DE Delaware|DC District of Columbia|FL Florida|GA Georgia|HI Hawaii|ID Idaho|IL Illinois|IN Indiana|IA Iowa|KS Kansas|KY Kentucky|LA Louisiana|ME Maine|MD Maryland|MA Massachusetts|MI Michigan|MN Minnesota|MS Mississippi|MO Missouri|MT Montana|NE Nebraska|NV Nevada|NH New Hampshire|NJ New Jersey|NM New Mexico|NY New York|NC North Carolina|ND North Dakota|OH Ohio|OK Oklahoma|OR Oregon|PA Pennsylvania|RI Rhode Island|SC South Carolina|SD South Dakota|TN Tennessee|TX Texas|UT Utah|VT Vermont|VA Virginia|WA Washington|WV West Virginia|WI Wisconsin|WY Wyoming'.split('|').map(s=>[s.slice(0,2),s.slice(3)]));
+const norm=s=>(s||'').trim().toLowerCase(), full=s=>ST[(s||'').trim().toUpperCase()]||(s||'').trim();
+const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const TABS=isStore?[['retail','Retail'],['restaurant','Restaurant'],['entertainment','Entertainment']]:[['mystudio','Our Games'],['otherstudio','Other Indie Studios']];
+const catKey=r=>norm(isStore?r.category:r.studio).replace(/[\s_-]/g,'');
+let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='';
+const abbr=s=>{const t=(s||'').trim();if(!t)return'';const u=t.toUpperCase();if(ST[u])return u;return Object.keys(ST).find(k=>norm(ST[k])===norm(t))||''};
+const nkey=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\bst\b\.?/g,'saint').replace(/\bmt\b\.?/g,'mount').replace(/\bft\b\.?/g,'fort').replace(/[^a-z0-9]+/g,' ').trim();
+const rad=x=>x*Math.PI/180,miles=(a,b)=>{const h=Math.sin(rad(b[1]-a[1])/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(rad(b[2]-a[2])/2)**2;return 3958.8*2*Math.asin(Math.sqrt(h))};
+let IDX=null,BYNAME=null;
+async function loadCities(){if(IDX)return;IDX=new Map();BYNAME=new Map();
+ try{const r=await fetch('data/cities-us.json');if(r.ok){const d=await r.json();for(const st in d)for(const c of d[st]){const k=nkey(c[0]);IDX.set(k+'|'+st,c);if(!BYNAME.has(k))BYNAME.set(k,[]);BYNAME.get(k).push([st,c])}}}catch(e){}}
+function coordsFor(city,state){if(!city)return null;const k=nkey(city),a=abbr(state);
+ if(a){const c=IDX.get(k+'|'+a);return c?{c,st:a}:null}const l=BYNAME.get(k);return l&&l.length===1?{c:l[0][1],st:l[0][0]}:null}
+async function resolveLoc(){U=null;note='';const city=loc.city.trim();if(!city)return;await loadCities();
+ const u=coordsFor(city,loc.state);
+ if(u){U=u.c;if(!abbr(loc.state))loc.state=ST[u.st]}
+ else note=`We couldn't pinpoint "${city}"${loc.state.trim()?'':' (try adding your state)'}, so results are matched on the text you typed. Try the nearest larger city if needed.`;
+ if(isStore)rows.forEach(r=>{if(r._c===undefined){const x=coordsFor(r.city,r.state);r._c=x?x.c:null}})}
+function parseCSV(t){t=t.replace(/^\uFEFF/,'');const out=[];let r=[],f='',q=false;
+ for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c=='"')q=true;else if(c==','){r.push(f);f=''}
+  else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;r.push(f);f='';out.push(r);r=[]}else f+=c}
+ if(f!==''||r.length){r.push(f);out.push(r)}
+ const h=(out.shift()||[]).map(x=>x.trim().toLowerCase());
+ return out.filter(r=>r.some(x=>x.trim())).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])))}
+async function load(){const u=isStore?S.storesCsvUrl:S.gamesCsvUrl;
+ if(u){try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const t=await r.text();if(t.trim()&&!/^\s*</.test(t))return parseCSV(t)}}catch(e){}}
+ try{const r=await fetch(root.dataset.csv+'?'+Date.now());if(r.ok)return parseCSV(await r.text())}catch(e){}return[]}
+function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
+ if(isStore){const sm=s&&norm(full(r.state))===s;
+  if(U&&r._c){const d=miles(U,r._c);return[d<=(S.nearbyMiles||50)?0:(sm?1:2),d]}
+  return[c&&nkey(r.city)===c&&(!s||sm)?0:sm?1:2,null]}
+ const g=(r.optimalregion||'').split(/[|,]/).map(norm).filter(Boolean),hit=v=>v&&g.some(x=>x===v||v.includes(x)||x.includes(v));
+ return[hit(s)||hit(norm(loc.city))?0:1,null]}
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function compute(){picks={};TABS.forEach(([k])=>{let l=rows.filter(r=>catKey(r)===k).map(r=>{const[t,d]=score(r);return{r,t,d}});
+ if(isStore)l=l.filter(x=>x.t<2);
+ picks[k]=[0,1,2].flatMap(t=>{const g=l.filter(x=>x.t===t);return g.some(x=>x.d!=null)?g.sort((a,b)=>(a.d??1e9)-(b.d??1e9)):shuffle(g)}).slice(0,isStore?6:8)});
+ active=(TABS.find(([k])=>picks[k].length)||TABS[0])[0]}
+function cta(a,t,c){const x=el('a','btn sm '+c,t);x.href=a;return x}
+function emptyPanel(){const p=el('div','empty'),place=[loc.city,loc.state].filter(Boolean).join(', ');
+ p.append(el('h3','',isStore?'No partner stores here yet':'Coming soon'),
+  el('p','',isStore?`We haven't partnered with a store${place?' in '+place:''} yet, but the network is growing. Do you own a store in the area?`:'No studios are listed here yet. Are you an indie developer?'));
+ const c=el('div','cta');c.append(...(isStore?[cta('signup-store.html','Yes, I own a store',''),cta('recommend-store.html',"No, I'm just recommending one",'pk')]:[cta('signup-indie-dev.html','Yes, I\'m an indie dev',''),cta('recommend-indie-dev.html',"No, I'm just recommending one",'pk')]));
+ c.style.cssText='display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap';p.append(c);return p}
+function card(x){const r=x.r,c=el('article','row'),u=safe(r.imagelink);
+ if(u){const i=new Image();i.loading='lazy';i.alt='';i.src=u;i.onerror=()=>i.replaceWith(el('div','ph','♾️'));c.append(i)}else c.append(el('div','ph','♾️'));
+ const b=el('div','rb');
+ if(isStore){b.append(el('h3','',r.storename),el('p','meta',[r.city,r.state].filter(Boolean).join(', ')));
+  if(x.t<2){const m=x.d!=null?` · ${Math.max(1,Math.round(x.d))} mi away`:'';b.append(el('span','badge',(x.t===0?(x.d!=null?'Nearby':'In your city'):'In your state')+m))}
+  if(r.notes)b.append(el('p','',r.notes));
+  const a=cta(safe(r.googlemapslink)||'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([r.storename,r.city,r.state].join(' ')),'Open in Google Maps','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}
+ else{b.append(el('h3','',r.gamename),el('p','meta',r.studioname));
+  if(x.t===0&&(loc.city||loc.state))b.append(el('span','badge','Popular in your region'));
+  const l=safe(r.storelink);if(l){const a=cta(l,'Get the Game','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}}
+ c.append(b);return c}
+function render(){const out=document.getElementById('results');out.replaceChildren();if(note&&searched)out.append(el('p','meta',note));
+ if(!searched){out.append(el('p','','Enter your city and state above to find partner stores near you.'));return}
+ const total=TABS.reduce((n,[k])=>n+picks[k].length,0);
+ if(!total){out.append(emptyPanel());return}
+ const bar=el('div','ntabs');bar.setAttribute('role','tablist');
+ TABS.forEach(([k,n])=>{const b=el('button','',`${n} (${picks[k].length})`);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',k===active);b.onclick=()=>{active=k;render()};bar.append(b)});
+ out.append(bar);
+ if(!picks[active].length)out.append(emptyPanel());else{const l=el('div','rows');picks[active].forEach(x=>l.append(card(x)));out.append(l)}}
+const ready=load().then(d=>{rows=d;compute();render()});
+document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault();
+ loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
+ if(isStore&&!norm(loc.city)&&!norm(loc.state)){document.getElementById('results').textContent='Please enter a city and state first.';return}
+ searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
+})();
