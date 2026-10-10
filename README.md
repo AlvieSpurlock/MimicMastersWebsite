@@ -23,10 +23,10 @@ Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 
 - **Social links:** `assets/config.js` (Discord, YouTube Business, YouTube Personal, Twitch). Empty links show "Link coming soon".
 - **Store Network data:** `data/stores.csv` (columns: StoreName, City, State, Category, RelevantHabit, AgeGroup, Notes, GoogleMapsLink, ImageLink). Category: Retail, Restaurant or Entertainment.
-- **Coalition criteria:** high-quality games, at least 10% to a grassroots charity, no controversies in the last year (edit in `ethical-indie-dev-coalition.html`).
+- **Coalition criteria:** high-quality games, at least 10% to a grassroots charity, no controversies in the last year (edit in `ethical-indie-dev-coalition.html`), plus the "All For One, One For All" pledge with its three sub-points.
 - **Indie Dev Coalition data:** `data/games.csv` (columns: GameName, StoreLink, Studio, StudioName, RelevantHabit, AgeGroup, OptimalRegion, ImageLink). Studio: MyStudio or OtherStudio. OptimalRegion can list several, separated by `|`.
 - **Live data (optional):** publish a Google Sheet to the web as CSV and paste the link into `storesCsvUrl` / `gamesCsvUrl` in `assets/config.js`.
-- **Press:** `data/coverage.json` (see the comment in `press.html`). Entries with type `Video` show in the Videos branch, the rest in the Press branch. Put `press-assets.zip` and `social-assets.zip` in `downloads/` for the two download buttons.
+- **Press:** a Google Sheet (`pressSheetUrl` in `assets/config.js`, shared as Anyone with the link: Viewer) with two tabs named `Videos` and `Press`. Columns in each: `Thumbnail`, `Description`, `Date`, `Link`. Thumbnail can be an image URL or a Google Drive share link; for YouTube links it can be left blank. Put `press-assets.zip` and `social-assets.zip` in `downloads/` for the two download buttons.
 - **Nearby search:** `data/cities-us.json` (built from GeoNames `cities500.txt`, US places only) turns the typed city into coordinates; stores are listed nearest first within `nearbyMiles` (default 50) in `assets/config.js`, then same-state stores. City data © [GeoNames](https://www.geonames.org/) (CC BY 4.0), credited on the lookup pages.
 - **Visitor location** is typed by the visitor, used only in their browser, and never sent or stored.
 
