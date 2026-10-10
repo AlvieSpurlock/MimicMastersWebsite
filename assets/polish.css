@@ -61,3 +61,7 @@ h2.neon.pk{border-color:var(--pk)}
 .vid video{width:auto;max-width:100%;max-height:72vh;border-radius:20px;border:4px solid #0a0916;background:#000;box-shadow:0 10px 28px #000a}
 .shots{display:flex;gap:1rem;overflow-x:auto;padding:.4rem .2rem 1rem;scroll-snap-type:x mandatory}
 .shots img{height:440px;width:auto;flex:none;border-radius:18px;border:3px solid #0a0916;box-shadow:0 8px 20px #0009;scroll-snap-align:center}
+/* buttons: readable text everywhere (beats .sub a link colour) */
+.btn{background:linear-gradient(#5fcf2f,#2a8a14);text-shadow:0 2px 0 #000a,0 0 6px #0005}
+.btn.pk{background:linear-gradient(#ff4fa8,#c70f68)}.btn.tl{background:linear-gradient(#22c7b8,#0a7f75)}.btn.dk{background:linear-gradient(#4a4a55,#1d1d24)}
+.sub a.btn,.sub a.btn:hover,.plate a.btn,.plate a.btn:hover,.note a.btn{color:#fff;font-weight:600;text-decoration:none}
