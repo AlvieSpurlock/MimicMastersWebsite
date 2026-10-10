@@ -7,17 +7,17 @@ const L=(window.SITE||{}).links||{};if(!L.youtubeBusiness&&L.youtube)L.youtubeBu
 document.querySelectorAll('[data-social]').forEach(a=>{const u=L[a.dataset.social];
  if(/^https?:\/\//i.test(u||'')){a.href=u;a.target='_blank';a.rel='noopener noreferrer'}
  else{a.classList.add('soon');a.removeAttribute('href');a.setAttribute('aria-disabled','true');a.title='Link coming soon'}});
-const cv=document.getElementById('coverage');
-if(cv)fetch('data/coverage.json?'+Date.now()).then(r=>r.json()).then(items=>{
- cv.replaceChildren();
- if(!Array.isArray(items)||!items.length){const p=document.createElement('p');p.textContent='Coverage is coming soon. Check back for press, reviews, interviews and videos about Mimic Masters.';cv.append(p);return}
- const h=document.createElement('h2');h.textContent='In The Spotlight';cv.append(h);
- const box=document.createElement('div');box.className='cov';
- items.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).forEach(i=>{
-  const a=document.createElement('article'),t=document.createElement('h3'),m=document.createElement('p');
-  const u=/^https?:\/\//i.test(i.url||'')?i.url:'';
-  if(u){const l=document.createElement('a');l.href=u;l.target='_blank';l.rel='noopener noreferrer';l.textContent=i.title||'Untitled';t.append(l)}else t.textContent=i.title||'Untitled';
-  m.className='meta';m.textContent=[i.outlet,i.type,i.date].filter(Boolean).join(' · ');a.append(t,m);
-  if(i.summary){const s=document.createElement('p');s.textContent=i.summary;a.append(s)}box.append(a)});
- cv.append(box)}).catch(()=>{cv.textContent='Coverage could not be loaded right now.'});
+const pv=document.getElementById('videos'),pp=document.getElementById('press');
+if(pv&&pp)fetch('data/coverage.json?'+Date.now()).then(r=>r.json()).then(items=>{
+ const fill=(sec,list,empty)=>{const box=sec.querySelector('[data-list]');box.replaceChildren();
+  if(!list.length){const p=document.createElement('p');p.textContent=empty;box.append(p);return}
+  list.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).forEach(i=>{
+   const a=document.createElement('article'),t=document.createElement('h3'),m=document.createElement('p');
+   const u=/^https?:\/\//i.test(i.url||'')?i.url:'';
+   if(u){const l=document.createElement('a');l.href=u;l.target='_blank';l.rel='noopener noreferrer';l.textContent=i.title||'Untitled';t.append(l)}else t.textContent=i.title||'Untitled';
+   m.className='meta';m.textContent=[i.outlet,i.type,i.date].filter(Boolean).join(' \u00b7 ');a.append(t,m);
+   if(i.summary){const s=document.createElement('p');s.textContent=i.summary;a.append(s)}box.append(a)})};
+ const all=Array.isArray(items)?items:[],isV=i=>/video/i.test(i.type||'');
+ fill(pv,all.filter(isV),'No videos yet. Check back soon.');fill(pp,all.filter(i=>!isV(i)),'No press yet. Check back soon.')
+}).catch(()=>{[pv,pp].forEach(x=>x.querySelector('[data-list]').textContent='Could not be loaded right now.')});
 })();

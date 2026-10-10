@@ -4,7 +4,7 @@ Official website for **Mimic Masters**, hosted on GitHub Pages.
 
 Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 
-## Pages (27)
+## Pages (28)
 
 | Group | Pages |
 |---|---|
@@ -14,7 +14,7 @@ Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 | Feedback (2) | `feedback-in-depth`, `feedback-short` |
 | Store Network | `store-network` (+ forms `recommend-store`, `signup-store`) |
 | Ethical Indie Dev Coalition | `ethical-indie-dev-coalition` (+ forms `recommend-indie-dev`, `signup-indie-dev`) |
-| Community | `community` (Discord, YouTube Business, YouTube Personal, Twitch), `coverage` |
+| Community | `community` (Discord, YouTube Business, YouTube Personal, Twitch), `press`, `contact` |
 | Other | `charity` (Charity Dedication), `about-creator` |
 | Testers | `android-tester`, `ios-tester` |
 | Help / Legal | `support`, `privacy` |
@@ -26,7 +26,7 @@ Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 - **Coalition criteria:** high-quality games, at least 10% to a grassroots charity, no controversies in the last year (edit in `ethical-indie-dev-coalition.html`).
 - **Indie Dev Coalition data:** `data/games.csv` (columns: GameName, StoreLink, Studio, StudioName, RelevantHabit, AgeGroup, OptimalRegion, ImageLink). Studio: MyStudio or OtherStudio. OptimalRegion can list several, separated by `|`.
 - **Live data (optional):** publish a Google Sheet to the web as CSV and paste the link into `storesCsvUrl` / `gamesCsvUrl` in `assets/config.js`.
-- **Coverage:** `data/coverage.json` (see the comment in `coverage.html` for the entry format).
+- **Press:** `data/coverage.json` (see the comment in `press.html`). Entries with type `Video` show in the Videos branch, the rest in the Press branch. Put `press-assets.zip` and `social-assets.zip` in `downloads/` for the two download buttons.
 - **Nearby search:** `data/cities-us.json` (built from GeoNames `cities500.txt`, US places only) turns the typed city into coordinates; stores are listed nearest first within `nearbyMiles` (default 50) in `assets/config.js`, then same-state stores. City data © [GeoNames](https://www.geonames.org/) (CC BY 4.0), credited on the lookup pages.
 - **Visitor location** is typed by the visitor, used only in their browser, and never sent or stored.
 

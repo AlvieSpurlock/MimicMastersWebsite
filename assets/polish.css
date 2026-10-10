@@ -65,3 +65,12 @@ h2.neon.pk{border-color:var(--pk)}
 .btn{background:linear-gradient(#5fcf2f,#2a8a14);text-shadow:0 2px 0 #000a,0 0 6px #0005}
 .btn.pk{background:linear-gradient(#ff4fa8,#c70f68)}.btn.tl{background:linear-gradient(#22c7b8,#0a7f75)}.btn.dk{background:linear-gradient(#4a4a55,#1d1d24)}
 .sub a.btn,.sub a.btn:hover,.plate a.btn,.plate a.btn:hover,.note a.btn{color:#fff;font-weight:600;text-decoration:none}
+
+/* press page */
+.press-top{text-align:center}.press-top p{font-size:1.15rem;margin:0 0 .9rem}
+.press-dl{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap}
+.press-cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}.press-cols .sub{margin:0}
+@media(max-width:700px){.press-cols{grid-template-columns:1fr}}
+/* header: keep brand and burger clear of the corner rivets */
+.top{padding-left:2.2rem;padding-right:2.2rem}.brand{margin-left:.6rem}
+@media(min-width:861px){.brand{margin-left:0}}
