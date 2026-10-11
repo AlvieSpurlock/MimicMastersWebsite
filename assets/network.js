@@ -28,11 +28,35 @@ function parseCSV(t){t=t.replace(/^\uFEFF/,'');const out=[];let r=[],f='',q=fals
   else if(c=='"')q=true;else if(c==','){r.push(f);f=''}
   else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;r.push(f);f='';out.push(r);r=[]}else f+=c}
  if(f!==''||r.length){r.push(f);out.push(r)}
- const h=(out.shift()||[]).map(x=>x.trim().toLowerCase());
+ const h=(out.shift()||[]).map(x=>x.toLowerCase().replace(/[^a-z0-9]/g,''));
  return out.filter(r=>r.some(x=>x.trim())).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])))}
-async function load(){const u=isStore?S.storesCsvUrl:S.gamesCsvUrl;
- if(u){try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const t=await r.text();if(t.trim()&&!/^\s*</.test(t))return parseCSV(t)}}catch(e){}}
+const ICON={retail:'🛍️',restaurant:'🍽️',entertainment:'🎮'};
+const fetchText=async u=>{try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const t=await r.text();if(t.trim()&&!/^\s*</.test(t))return t}}catch(e){}return null};
+const pick1=(r,...k)=>{for(const x of k)if(r[x])return r[x];return''};
+const fix=r=>{r.storename=pick1(r,'storename','name','store');r.googlemapslink=pick1(r,'googlemapslink','mapslink','maps','map');r.imagelink=pick1(r,'imagelink','image','thumbnail','photo');r.notes=pick1(r,'notes','description');return r};
+async function loadRaw(){const u=isStore?S.storesCsvUrl:S.gamesCsvUrl,id=(u||'').match(/\/spreadsheets\/d\/([\w-]+)/);
+ if(id){const g=tab=>`https://docs.google.com/spreadsheets/d/${id[1]}/gviz/tq?tqx=out:csv`+(tab?'&sheet='+encodeURIComponent(tab):'');
+  if(isStore){
+   /* Tabs named Retail / Restaurant / Entertainment. Google silently returns the FIRST sheet for an unknown tab name, so compare against a deliberately bogus tab to spot that. */
+   const bogus=await fetchText(g('__none__')),texts=await Promise.all(TABS.map(([,n])=>fetchText(g(n)))),out=[],same=[];
+   TABS.forEach(([k,n],i)=>{const t=texts[i];if(!t)return;if(t===bogus)same.push(n);else parseCSV(t).forEach(r=>{if(!r.category)r.category=n;out.push(r)})});
+   if(same.length&&bogus)parseCSV(bogus).forEach(r=>{if(!r.category&&same.length<3)r.category=same[0];out.push(r)});
+   if(out.length)return out}
+  else{const t=await fetchText(g());if(t)return parseCSV(t)}}
+ else if(u){const t=await fetchText(u);if(t)return parseCSV(t)}
  try{const r=await fetch(root.dataset.csv+'?'+Date.now());if(r.ok)return parseCSV(await r.text())}catch(e){}return[]}
+const load=async()=>(await loadRaw()).map(fix);
+document.head.append(Object.assign(document.createElement('style'),{textContent:'.cat{margin:1.6rem 0;scroll-margin-top:140px}.cat-h{font:700 1.35rem Orbitron,sans-serif;color:var(--cy);margin:0 0 .7rem;padding-bottom:.4rem;border-bottom:2px solid #ffffff22}button[aria-pressed=true]{background:linear-gradient(#35e0d0,#0f9e92)!important;border-color:#000a!important}a.chipjump{font:600 1rem Fredoka,sans-serif;color:#fff;text-decoration:none;padding:.5rem 1.1rem;border-radius:999px;border:2px solid #ffffff33;background:#ffffff10}a.chipjump:hover{background:var(--pk)}'}));
+let sel='all';
+function renderStores(out){const total=TABS.reduce((n,[k])=>n+picks[k].length,0),bar=el('div','ntabs');bar.setAttribute('role','group');
+ [['all','All',''],...TABS.map(([k,n])=>[k,n,ICON[k]+' '])].forEach(([k,n,i])=>{const c=k==='all'?total:picks[k].length,b=el('button','',`${i}${n} (${c})`);b.type='button';b.setAttribute('aria-pressed',k===sel);b.onclick=()=>{sel=k;render()};bar.append(b)});
+ out.append(bar);
+ TABS.filter(([k])=>sel==='all'||sel===k).forEach(([k,n])=>{
+  const list=picks[k],shown=sel==='all'?list.slice(0,6):list,s=el('section','cat');s.append(el('h3','cat-h',`${ICON[k]} ${n}`));
+  if(shown.length){const l=el('div','rows');shown.forEach(x=>l.append(card(x)));s.append(l);
+   if(shown.length<list.length){const m=el('button','btn sm tl',`See all ${list.length} ${n.toLowerCase()} spots`);m.type='button';m.onclick=()=>{sel=k;render()};s.append(m)}}
+  else s.append(el('p','meta',`No ${n.toLowerCase()} partners near you yet.`),cta('recommend-store.html',`Recommend ${/^[aeiou]/i.test(n)?'an':'a'} ${n.toLowerCase()} spot`,'pk'));
+  out.append(s)})}
 function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
  if(isStore){const sm=s&&norm(full(r.state))===s;
   if(U&&r._c){const d=miles(U,r._c);return[d<=(S.nearbyMiles||50)?0:(sm?1:2),d]}
@@ -42,7 +66,7 @@ function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function compute(){picks={};TABS.forEach(([k])=>{let l=rows.filter(r=>catKey(r)===k).map(r=>{const[t,d]=score(r);return{r,t,d}});
  if(isStore)l=l.filter(x=>x.t<2);
- picks[k]=[0,1,2].flatMap(t=>{const g=l.filter(x=>x.t===t);return g.some(x=>x.d!=null)?g.sort((a,b)=>(a.d??1e9)-(b.d??1e9)):shuffle(g)}).slice(0,isStore?6:8)});
+ picks[k]=[0,1,2].flatMap(t=>{const g=l.filter(x=>x.t===t);return g.some(x=>x.d!=null)?g.sort((a,b)=>(a.d??1e9)-(b.d??1e9)):shuffle(g)}).slice(0,isStore?30:8)});
  active=(TABS.find(([k])=>picks[k].length)||TABS[0])[0]}
 function cta(a,t,c){const x=el('a','btn sm '+c,t);x.href=a;return x}
 function emptyPanel(){const p=el('div','empty'),place=[loc.city,loc.state].filter(Boolean).join(', ');
@@ -50,14 +74,14 @@ function emptyPanel(){const p=el('div','empty'),place=[loc.city,loc.state].filte
   el('p','',isStore?`We haven't partnered with a store${place?' in '+place:''} yet, but the network is growing. Do you own a store in the area?`:'No studios are listed here yet. Are you an indie developer?'));
  const c=el('div','cta');c.append(...(isStore?[cta('signup-store.html','Yes, I own a store',''),cta('recommend-store.html',"No, I'm just recommending one",'pk')]:[cta('signup-indie-dev.html','Yes, I\'m an indie dev',''),cta('recommend-indie-dev.html',"No, I'm just recommending one",'pk')]));
  c.style.cssText='display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap';p.append(c);return p}
-function card(x){const r=x.r,c=el('article','row'),u=safe(r.imagelink);
- if(u){const i=new Image();i.loading='lazy';i.alt='';i.src=u;i.onerror=()=>i.replaceWith(el('div','ph','♾️'));c.append(i)}else c.append(el('div','ph','♾️'));
+function card(x){const r=x.r,c=el('article','row');
  const b=el('div','rb');
  if(isStore){b.append(el('h3','',r.storename),el('p','meta',[r.city,r.state].filter(Boolean).join(', ')));
   if(x.t<2){const m=x.d!=null?` · ${Math.max(1,Math.round(x.d))} mi away`:'';b.append(el('span','badge',(x.t===0?(x.d!=null?'Nearby':'In your city'):'In your state')+m))}
   if(r.notes)b.append(el('p','',r.notes));
   const a=cta(safe(r.googlemapslink)||'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([r.storename,r.city,r.state].join(' ')),'Open in Google Maps','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}
  else{b.append(el('h3','',r.gamename),el('p','meta',r.studioname));
+  if(r.optimalregion)b.append(el('p','meta','Popular in: '+r.optimalregion.split(/[|,]/).map(z=>z.trim()).filter(Boolean).join(', ')));
   if(x.t===0&&(loc.city||loc.state))b.append(el('span','badge','Popular in your region'));
   const l=safe(r.storelink);if(l){const a=cta(l,'Get the Game','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}}
  c.append(b);return c}
@@ -65,6 +89,7 @@ function render(){const out=document.getElementById('results');out.replaceChildr
  if(!searched){out.append(el('p','','Enter your city and state above to find partner stores near you.'));return}
  const total=TABS.reduce((n,[k])=>n+picks[k].length,0);
  if(!total){out.append(emptyPanel());return}
+ if(isStore){renderStores(out);return}
  const bar=el('div','ntabs');bar.setAttribute('role','tablist');
  TABS.forEach(([k,n])=>{const b=el('button','',`${n} (${picks[k].length})`);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',k===active);b.onclick=()=>{active=k;render()};bar.append(b)});
  out.append(bar);
@@ -73,5 +98,5 @@ const ready=load().then(d=>{rows=d;compute();render()});
 document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault();
  loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
  if(isStore&&!norm(loc.city)&&!norm(loc.state)){document.getElementById('results').textContent='Please enter a city and state first.';return}
- searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
+ sel='all';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
 })();
