@@ -69,12 +69,7 @@ function render(mode,{rows,est,okL,okE},box){
  box.append(tiles);
  box.append(el('p','gv-note','ESTIMATE: based on Appodeal’s internal revenue estimates, so the real amount could be lower or higher. It does not include direct donations.'));
  if(mode!=='landing'&&!rows.length){const d=el('div','gv-ph'),t=PH[mode];d.append(el('div','gv-cup','☕'),el('div','gv-ph-t',t[0]),el('div','gv-ph-s',t[1]));box.append(d)}
- if(mode==='full'&&rows.length){
-  box.append(el('h3','gv-h','Every donation'));
-  const tb=el('table','gv-table'),th=el('thead'),hd=el('tr');['Date','Amount'].forEach(h=>hd.append(el('th','',h)));th.append(hd);tb.append(th);
-  const body=el('tbody');rows.forEach(r=>{const tr=el('tr');tr.append(el('td','',nice(r.date)),el('td','',money2.format(r.cents/100)));body.append(tr)});
-  tb.append(body);box.append(tb)}
- if(mode==='landing'&&rows.length){const a=el('a','btn sm tl','See every donation');a.href='donations.html';const w=el('p','gv-cta');w.append(a);box.append(w)}}
+}
 
 function ph(m,kind){const box=m.querySelector('.gv-mount')||m.appendChild(el('div','gv-mount'));box.replaceChildren();
  const d=el('div','gv-ph'+(kind==='load'?' gv-busy':'')),t=PH[kind==='load'?'load':m.dataset.giving];
