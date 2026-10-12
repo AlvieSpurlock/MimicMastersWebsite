@@ -14,7 +14,7 @@
 @media(max-width:760px){
  .hero-grid{grid-template-columns:1fr}.hero-main{grid-column:1}
  .store-side{display:none}.hero .cta{display:none}
- .store-below{display:flex;gap:1.6rem;margin:1.2rem auto 0;max-width:460px;padding:1rem 1.2rem;background:rgba(10,6,30,.9);border:2px solid #ffffff26;border-radius:22px;box-shadow:0 8px 24px #0008}
+ .store-below{display:flex;gap:1.6rem;margin:1.2rem auto 0;max-width:460px;padding:1rem 1.2rem;background:#f2f1fa;border:3px solid #0a0916;border-radius:22px;box-shadow:0 6px 0 #0008,0 10px 24px #0006}
  .store-btn img{height:96px}
 }
 .joinrel{text-align:center}
