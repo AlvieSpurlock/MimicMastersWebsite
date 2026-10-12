@@ -34,7 +34,7 @@ const toDate=s=>{s=/^\d{4}-\d{2}-\d{2} \d/.test(s||'')?s.replace(' ','T'):s;cons
 const nice=s=>{const d=toDate(s);return d?d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):(s||'')};
 
 async function load(){
- if(!id)return{rows:[],est:null};
+ if(!id)return{rows:[],est:null,okL:false,okE:false};
  /* Google silently answers an unknown tab name with the FIRST tab, so also ask for a tab that cannot exist and compare. */
  const q='&tq='+encodeURIComponent('select sum(B), max(C)');
  const [lt,et,bt,ct,cb]=await Promise.all([getText(g()),getText(g('Estimate')),getText(g('__none__')),getText(g(TAB,cid)+q),getText(g('__none__',cid)+q)]);
@@ -47,21 +47,28 @@ async function load(){
  if(!est&&et&&et!==bt){const er=parseCSV(et);
   if(er.length&&!('charity' in er[0]))for(const r of er){const a=num(r.amount||r.estimate||r.estimatedraised);if(a>0){est={usd:a,asof:r.asof||r.date||''};break}}}
  rows.sort((a,b)=>((toDate(b.date)||0)-(toDate(a.date)||0))||b.i-a.i);
- return{rows,est}}
+ return{rows,est,okL:!!lt,okE:!!(ct&&ct!==cb)||!!est}}
 
 function groups(rows){const m=new Map();rows.slice().sort((a,b)=>a.i-b.i).forEach(r=>{const k=r.name.toLowerCase();if(!m.has(k))m.set(k,{name:r.name,cents:0,n:0});const o=m.get(k);o.cents+=r.cents;o.n++});
  return[...m.values()].sort((a,b)=>b.cents-a.cents)}
 
-function render(mode,{rows,est},box){
+const PH={
+ load:['Pouring the tea…','Counting every last sugar cube. One moment, please.'],
+ landing:['The kettle is on!','Tea-time totals are still steeping. Check back soon to see how the giving is going.'],
+ charity:['The kettle is on!','Nothing has been poured out yet. The first cup of giving will show up right here.'],
+ full:['The tea party ledger is empty, for now.','Every donation will be listed here, with the charity and the date, the moment it is made.']};
+function render(mode,{rows,est,okL,okE},box){
  box.replaceChildren();
  const gs=groups(rows),total=rows.reduce((n,r)=>n+r.cents,0),tiles=el('div','gv-tiles');
- if(est){const t=el('div','gv-tile est'),lab=el('div','gv-label');lab.append('Estimated raised ',el('span','gv-badge','Estimate'));
-  t.append(lab,el('div','gv-val','~'+money0.format(est.usd)));if(est.asof)t.append(el('div','gv-sub','As of '+nice(est.asof)));tiles.append(t)}
- if(rows.length){const t=el('div','gv-tile don');
-  t.append(el('div','gv-label','Donated so far'),el('div','gv-val',money2.format(total/100)),
-   el('div','gv-sub',`${rows.length} donation${rows.length===1?'':'s'} to ${gs.length} ${gs.length===1?'charity':'charities'}`));tiles.append(t)}
+ {const t=el('div','gv-tile est'),lab=el('div','gv-label');lab.append('Estimated raised ',el('span','gv-badge','Estimate'));
+  t.append(lab,el('div','gv-val',est?'~'+money0.format(est.usd):(okE?'~$0':'—')));
+  t.append(el('div','gv-sub',est?(est.asof?'As of '+nice(est.asof):'From player reports'):(okE?'No player reports yet':'Could not reach the contributions sheet')));tiles.append(t)}
+ {const t=el('div','gv-tile don');
+  t.append(el('div','gv-label','Donated so far'),el('div','gv-val',rows.length?money2.format(total/100):(okL?'$0.00':'—')),
+   el('div','gv-sub',rows.length?`${rows.length} donation${rows.length===1?'':'s'} to ${gs.length} ${gs.length===1?'charity':'charities'}`:(okL?'Nothing donated yet':'Could not reach the donations sheet')));tiles.append(t)}
  box.append(tiles);
- if(est)box.append(el('p','gv-note','ESTIMATE: based on Appodeal’s internal revenue estimates, so the real amount could be lower or higher. It does not include direct donations.'));
+ box.append(el('p','gv-note','ESTIMATE: based on Appodeal’s internal revenue estimates, so the real amount could be lower or higher. It does not include direct donations.'));
+ if(mode!=='landing'&&!rows.length){const d=el('div','gv-ph'),t=PH[mode];d.append(el('div','gv-cup','☕'),el('div','gv-ph-t',t[0]),el('div','gv-ph-s',t[1]));box.append(d)}
  if(mode!=='landing'&&rows.length){
   box.append(el('h3','gv-h','Donated per charity'));
   const ul=el('ul','gv-tally');gs.forEach(x=>{const li=el('li');li.append(el('span','',x.name),el('b','',money2.format(x.cents/100)));ul.append(li)});box.append(ul)}
@@ -72,20 +79,12 @@ function render(mode,{rows,est},box){
   tb.append(body);box.append(tb)}
  if(mode==='landing'&&rows.length){const a=el('a','btn sm tl','See every donation');a.href='donations.html';const w=el('p','gv-cta');w.append(a);box.append(w)}}
 
-const PH={
- load:['Pouring the tea…','Counting every last sugar cube. One moment, please.'],
- landing:['The kettle is on!','Tea-time totals are still steeping. Check back soon to see how the giving is going.'],
- charity:['The kettle is on!','Nothing has been poured out yet. The first cup of giving will show up right here.'],
- full:['The tea party ledger is empty, for now.','Every donation will be listed here, with the charity and the date, the moment it is made.']};
 function ph(m,kind){const box=m.querySelector('.gv-mount')||m.appendChild(el('div','gv-mount'));box.replaceChildren();
  const d=el('div','gv-ph'+(kind==='load'?' gv-busy':'')),t=PH[kind==='load'?'load':m.dataset.giving];
  d.append(el('div','gv-cup','☕'),el('div','gv-ph-t',t[0]),el('div','gv-ph-s',t[1]));box.append(d);m.hidden=false;return box}
 const live=mounts.filter(m=>!m.hasAttribute('data-giving-empty'));
 mounts.filter(m=>m.hasAttribute('data-giving-empty')).forEach(m=>m.hidden=true);
 live.forEach(m=>ph(m,'load'));
-load().then(d=>{
- const has=d.rows.length>0||d.est;
- live.forEach(m=>{if(!has){ph(m,'empty');return}
-  render(m.dataset.giving,d,m.querySelector('.gv-mount'));m.hidden=false})
-}).catch(()=>live.forEach(m=>ph(m,'empty')));
+load().then(d=>{live.forEach(m=>{render(m.dataset.giving,d,m.querySelector('.gv-mount'));m.hidden=false})
+}).catch(()=>live.forEach(m=>{render(m.dataset.giving,{rows:[],est:null,okL:false,okE:false},m.querySelector('.gv-mount'));m.hidden=false}));
 })();
