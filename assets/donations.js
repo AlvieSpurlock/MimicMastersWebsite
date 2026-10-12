@@ -47,7 +47,7 @@ async function load(){
  if(!est&&et&&et!==bt){const er=parseCSV(et);
   if(er.length&&!('charity' in er[0]))for(const r of er){const a=num(r.amount||r.estimate||r.estimatedraised);if(a>0){est={usd:a,asof:r.asof||r.date||''};break}}}
  rows.sort((a,b)=>((toDate(b.date)||0)-(toDate(a.date)||0))||b.i-a.i);
- return{rows,est,okL:!!lt,okE:!!(ct&&ct!==cb)||!!est}}
+ return{rows,est,okL:!!lt,okE:!!(ct||cb)||!!est}}
 
 function groups(rows){const m=new Map();rows.slice().sort((a,b)=>a.i-b.i).forEach(r=>{const k=r.name.toLowerCase();if(!m.has(k))m.set(k,{name:r.name,cents:0,n:0});const o=m.get(k);o.cents+=r.cents;o.n++});
  return[...m.values()].sort((a,b)=>b.cents-a.cents)}
