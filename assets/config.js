@@ -18,5 +18,11 @@ window.SITE={
   pressSheetUrl:"https://docs.google.com/spreadsheets/d/1-EAeArB_0UWxSoTxya9A-qL-SpKa5cw5RTqVdsQCdNI/edit?usp=sharing",
   nearbyMiles:50,   // Store Network: how far "nearby" reaches
   storesCsvUrl:"https://docs.google.com/spreadsheets/d/1I-3HYszsSXz9xXAMGkrx1USPITzDeKpg9hPNqrY4rl8/edit?usp=sharing",
-  gamesCsvUrl:"https://docs.google.com/spreadsheets/d/1jiBBk1qjRfI4BG0QtHvUte_sYPmSXDYixHXfyW097Z8/edit?usp=sharing"
+  gamesCsvUrl:"https://docs.google.com/spreadsheets/d/1jiBBk1qjRfI4BG0QtHvUte_sYPmSXDYixHXfyW097Z8/edit?usp=sharing",
+  // Donations: ONE universal ledger for all your games (Charity | Date | Amount). This site only totals the charity named here.
+  // Use the name exactly as you type it in the ledger's Charity column (capitals and punctuation do not matter). A list works too: ["ASAN","Autistic Self Advocacy Network"]
+  donationsSheetUrl:"https://docs.google.com/spreadsheets/d/1dxzL7XYXNb0fk4bb9b4GMNO7BqOpGALekMsCOH7xLz0/edit?usp=sharing",
+  donationCharity:["ASAN","Autistic Self Advocacy Network"],
+  // Estimated raised: the Google Sheet the games report to (tab "Players").
+  contributionsSheetUrl:"https://docs.google.com/spreadsheets/d/1KCmfXcqwW6QI4aUAgZk9iZ3ofzt2U2F8g2hDD4U6YSc/edit?usp=sharing"
 };

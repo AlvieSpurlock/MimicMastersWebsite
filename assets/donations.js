@@ -1,6 +1,6 @@
 /* Donations block (Charity page, Landing page, Donations page).
    Source: ONE Google Sheet, shared as "Anyone with the link: Viewer".
-     Tab 1 (the ledger, keep it first):  Charity | Date | Amount      one row per donation
+     Tab 1 (the ledger, keep it first):  Charity | Date | Amount      one row per donation, ALL your games; only the charity named in config.js (donationCharity) is totaled and listed
      Second sheet, tab "Players" (automatic): PlayerID | Contribution | Updated. One row per player, written by the
                                          Apps Script web app (ContributionReceiver.gs) that each game reports to.
                                          The site adds the Contribution column up with one query.
@@ -17,6 +17,8 @@ const DEFAULT_CONTRIB='https://docs.google.com/spreadsheets/d/1KCmfXcqwW6QI4aUAg
 const cid=(((window.SITE||{}).contributionsSheetUrl||DEFAULT_CONTRIB).match(/\/spreadsheets\/d\/([\w-]+)/)||[])[1];
 const g=(tab,sid=id)=>`https://docs.google.com/spreadsheets/d/${sid}/gviz/tq?tqx=out:csv&headers=1`+(tab?'&sheet='+encodeURIComponent(tab):'');
 const getText=async u=>{try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)return null;const t=await r.text();return t.trim()&&!/^\s*</.test(t)?t:null}catch(e){return null}};
+const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const CH=[].concat((window.SITE||{}).donationCharity||['ASAN','Autistic Self Advocacy Network']).map(norm).filter(Boolean);
 const money2=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
 const money0=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0});
 
@@ -39,7 +41,7 @@ async function load(){
  const q='&tq='+encodeURIComponent('select sum(B), max(C)');
  const [lt,et,bt,ct,cb]=await Promise.all([getText(g()),getText(g('Estimate')),getText(g('__none__')),getText(g(TAB,cid)+q),getText(g('__none__',cid)+q)]);
  const rows=[];
- if(lt)parseCSV(lt).forEach((r,i)=>{const name=r.charity,amt=num(r.amount);if(name&&amt>0)rows.push({name,cents:Math.round(amt*100),date:r.date,i})});
+ if(lt)parseCSV(lt).forEach((r,i)=>{const name=r.charity,amt=num(r.amount);if(name&&amt>0&&CH.includes(norm(name)))rows.push({name,cents:Math.round(amt*100),date:r.date,i})});
  let est=null;
  /* 1) live: sum of every player's reported estimate (Players tab of the contributions sheet) */
  if(ct&&ct!==cb){const c=parseCSV(ct)[0];if(c){const v=Object.values(c),a=num(v[0]);if(a>0)est={usd:a,asof:v[1]||''}}}
@@ -49,8 +51,6 @@ async function load(){
  rows.sort((a,b)=>((toDate(b.date)||0)-(toDate(a.date)||0))||b.i-a.i);
  return{rows,est,okL:!!lt,okE:!!(ct||cb)||!!est}}
 
-function groups(rows){const m=new Map();rows.slice().sort((a,b)=>a.i-b.i).forEach(r=>{const k=r.name.toLowerCase();if(!m.has(k))m.set(k,{name:r.name,cents:0,n:0});const o=m.get(k);o.cents+=r.cents;o.n++});
- return[...m.values()].sort((a,b)=>b.cents-a.cents)}
 
 const PH={
  load:['Pouring the tea…','Counting every last sugar cube. One moment, please.'],
@@ -59,23 +59,20 @@ const PH={
  full:['The tea party ledger is empty, for now.','Every donation will be listed here, with the charity and the date, the moment it is made.']};
 function render(mode,{rows,est,okL,okE},box){
  box.replaceChildren();
- const gs=groups(rows),total=rows.reduce((n,r)=>n+r.cents,0),tiles=el('div','gv-tiles');
+ const total=rows.reduce((n,r)=>n+r.cents,0),tiles=el('div','gv-tiles');
  {const t=el('div','gv-tile est'),lab=el('div','gv-label');lab.append('Estimated raised ',el('span','gv-badge','Estimate'));
   t.append(lab,el('div','gv-val',est?'~'+money0.format(est.usd):(okE?'~$0':'—')));
   t.append(el('div','gv-sub',est?(est.asof?'As of '+nice(est.asof):'From player reports'):(okE?'No player reports yet':'Could not reach the contributions sheet')));tiles.append(t)}
  {const t=el('div','gv-tile don');
   t.append(el('div','gv-label','Donated so far'),el('div','gv-val',rows.length?money2.format(total/100):(okL?'$0.00':'—')),
-   el('div','gv-sub',rows.length?`${rows.length} donation${rows.length===1?'':'s'} to ${gs.length} ${gs.length===1?'charity':'charities'}`:(okL?'Nothing donated yet':'Could not reach the donations sheet')));tiles.append(t)}
+   el('div','gv-sub',rows.length?`${rows.length} donation${rows.length===1?'':'s'}`:(okL?'Nothing donated yet':'Could not reach the donations sheet')));tiles.append(t)}
  box.append(tiles);
  box.append(el('p','gv-note','ESTIMATE: based on Appodeal’s internal revenue estimates, so the real amount could be lower or higher. It does not include direct donations.'));
  if(mode!=='landing'&&!rows.length){const d=el('div','gv-ph'),t=PH[mode];d.append(el('div','gv-cup','☕'),el('div','gv-ph-t',t[0]),el('div','gv-ph-s',t[1]));box.append(d)}
- if(mode!=='landing'&&rows.length){
-  box.append(el('h3','gv-h','Donated per charity'));
-  const ul=el('ul','gv-tally');gs.forEach(x=>{const li=el('li');li.append(el('span','',x.name),el('b','',money2.format(x.cents/100)));ul.append(li)});box.append(ul)}
  if(mode==='full'&&rows.length){
   box.append(el('h3','gv-h','Every donation'));
-  const tb=el('table','gv-table'),th=el('thead'),hd=el('tr');['Date','Charity','Amount'].forEach(h=>hd.append(el('th','',h)));th.append(hd);tb.append(th);
-  const body=el('tbody');rows.forEach(r=>{const tr=el('tr');tr.append(el('td','',nice(r.date)),el('td','',r.name),el('td','',money2.format(r.cents/100)));body.append(tr)});
+  const tb=el('table','gv-table'),th=el('thead'),hd=el('tr');['Date','Amount'].forEach(h=>hd.append(el('th','',h)));th.append(hd);tb.append(th);
+  const body=el('tbody');rows.forEach(r=>{const tr=el('tr');tr.append(el('td','',nice(r.date)),el('td','',money2.format(r.cents/100)));body.append(tr)});
   tb.append(body);box.append(tb)}
  if(mode==='landing'&&rows.length){const a=el('a','btn sm tl','See every donation');a.href='donations.html';const w=el('p','gv-cta');w.append(a);box.append(w)}}
 

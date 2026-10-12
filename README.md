@@ -48,7 +48,7 @@ If you edit locally, **Pull before you Push**, because the sync bot commits to t
 `assets/donations.js` reads one Google Sheet and fills the "Giving So Far" block on `charity.html`, the "Giving Back" block on `index.html`, and the full list on `donations.html` (a sub page of Charity Dedication). Nothing is shown until there is data.
 
 Share the Sheet as **Anyone with the link: Viewer**. Tabs:
-- **First tab, the ledger**: headers `Charity`, `Date`, `Amount`. One row per donation you actually make.
+- **First tab, the ledger** (one universal ledger for ALL your games): headers `Charity`, `Date`, `Amount`, one row per donation you make. This site only totals and lists rows whose Charity matches `donationCharity` in `assets/config.js` (currently ASAN). Other games' charities are ignored here, and the list shows only Date and Amount.
 - **Contributions sheet (a second Sheet, also shared Anyone with the link: Viewer), tab `Players`**: columns `PlayerID`, `Contribution`, `Updated`, one row per player. Each game reports its lifetime estimated charity dollars through an Apps Script web app (`ContributionReceiver.gs`) using a random player id (`ContributionReporter.cs` in the Unity project). The site adds the `Contribution` column up for "Estimated raised" (always flagged ESTIMATE). Setup is in the header of `ContributionReceiver.gs`.
 - **`Estimate` tab, optional fallback**: headers `Amount`, `AsOf`, one row typed by hand. Used only while `Players` is empty.
 
