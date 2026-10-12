@@ -4,7 +4,7 @@ Official website for **Mimic Masters**, hosted on GitHub Pages.
 
 Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 
-## Pages (29)
+## Pages (31)
 
 | Group | Pages |
 |---|---|
@@ -26,6 +26,7 @@ Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 - **Coalition criteria:** high-quality games, at least 10% to a grassroots charity, no controversies in the last year (edit in `ethical-indie-dev-coalition.html`), plus the "All For One, One For All" pledge with its three sub-points.
 - **Indie Dev Coalition data:** `data/games.csv` (columns: GameName, StoreLink, Studio, StudioName, RelevantHabit, AgeGroup, OptimalRegion, ImageLink). Studio: MyStudio or OtherStudio. OptimalRegion can list several, separated by `|`.
 - **Store Network sections:** results are grouped into Retail, Restaurant and Entertainment. The Google Sheet can use tabs named exactly `Retail`, `Restaurant`, `Entertainment`, or a single sheet with a `Category` column. Header spacing and capitalization don't matter ("Image Link" = `ImageLink`). ImageLink, RelevantHabit and AgeGroup are app-only and are not shown on the site.
+- **App store buttons:** the landing page shows App Store and Google Play logos (inside the title card on PC, under it on mobile). Set `stores.ios` / `stores.android` in `assets/config.js` when the apps are live; until then they open `join-ios.html` / `join-android.html` (Discord + tester prompts). `appleFocused` picks which logo comes first when the visitor's platform can't be detected.
 - **Press & Social downloads:** `downloads/press-assets.zip` (full quality) and `downloads/social-assets.zip` (post-ready), linked from the Press page.
 - **Live data (optional):** publish a Google Sheet to the web as CSV and paste the link into `storesCsvUrl` / `gamesCsvUrl` in `assets/config.js`.
 - **Press:** a Google Sheet (`pressSheetUrl` in `assets/config.js`, shared as Anyone with the link: Viewer) with two tabs named `Videos` and `Press`. Columns in each: `Thumbnail`, `Description`, `Date`, `Link`. Thumbnail can be an image URL or a Google Drive share link; for YouTube links it can be left blank. Put `press-assets.zip` and `social-assets.zip` in `downloads/` for the two download buttons.
