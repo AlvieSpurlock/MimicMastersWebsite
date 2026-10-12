@@ -70,14 +70,22 @@ function render(mode,{rows,est},box){
   const tb=el('table','gv-table'),th=el('thead'),hd=el('tr');['Date','Charity','Amount'].forEach(h=>hd.append(el('th','',h)));th.append(hd);tb.append(th);
   const body=el('tbody');rows.forEach(r=>{const tr=el('tr');tr.append(el('td','',nice(r.date)),el('td','',r.name),el('td','',money2.format(r.cents/100)));body.append(tr)});
   tb.append(body);box.append(tb)}
- if(mode!=='full'&&rows.length){const a=el('a','btn sm tl','See every donation');a.href='donations.html';const w=el('p','gv-cta');w.append(a);box.append(w)}}
+ if(mode==='landing'&&rows.length){const a=el('a','btn sm tl','See every donation');a.href='donations.html';const w=el('p','gv-cta');w.append(a);box.append(w)}}
 
+const PH={
+ load:['Pouring the tea…','Counting every last sugar cube. One moment, please.'],
+ landing:['The kettle is on!','Tea-time totals are still steeping. Check back soon to see how the giving is going.'],
+ charity:['The kettle is on!','Nothing has been poured out yet. The first cup of giving will show up right here.'],
+ full:['The tea party ledger is empty, for now.','Every donation will be listed here, with the charity and the date, the moment it is made.']};
+function ph(m,kind){const box=m.querySelector('.gv-mount')||m.appendChild(el('div','gv-mount'));box.replaceChildren();
+ const d=el('div','gv-ph'+(kind==='load'?' gv-busy':'')),t=PH[kind==='load'?'load':m.dataset.giving];
+ d.append(el('div','gv-cup','☕'),el('div','gv-ph-t',t[0]),el('div','gv-ph-s',t[1]));box.append(d);m.hidden=false;return box}
+const live=mounts.filter(m=>!m.hasAttribute('data-giving-empty'));
+mounts.filter(m=>m.hasAttribute('data-giving-empty')).forEach(m=>m.hidden=true);
+live.forEach(m=>ph(m,'load'));
 load().then(d=>{
  const has=d.rows.length>0||d.est;
- mounts.forEach(m=>{
-  if(m.hasAttribute('data-giving-empty')){m.hidden=!!has;return}
-  if(!has)return;
-  const box=m.querySelector('.gv-mount')||m.appendChild(el('div','gv-mount'));
-  render(m.dataset.giving,d,box);m.hidden=false})
-}).catch(()=>{});
+ live.forEach(m=>{if(!has){ph(m,'empty');return}
+  render(m.dataset.giving,d,m.querySelector('.gv-mount'));m.hidden=false})
+}).catch(()=>live.forEach(m=>ph(m,'empty')));
 })();
