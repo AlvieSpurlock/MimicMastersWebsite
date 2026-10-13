@@ -9,7 +9,8 @@
 <li>Location is optional, is offered only to players aged 13 or older, is used only on your device and only on the day it is collected, and is deleted the next time you open the game after that day.  </li>
 <li>Advertising partners receive device and advertising data so they can show ads. This is the main way information leaves your device.  </li>
 <li>You can limit ad tracking at any time using the controls described in Section 5.  </li>
-<li>The game sends error reports, app logs and performance numbers to Sentry, a diagnostics service, so we can fix bugs and crashes. These contain no name, contact details, location or birth date (Section 3.10).</li>
+<li>The game sends error reports, app logs and performance numbers to Sentry, a diagnostics service, so we can fix bugs and crashes. These contain no name, contact details, location or birth date (Section 3.10).  </li>
+<li>The game sends the estimated amount your play has raised for charity to a Google Sheet, so our website can show the total raised. Players aged 13 or older are counted under a random player ID. Younger players are added to one shared total with no player ID (Section 3.7).</li>
 </ul>
 <p>This policy covers the Mimic Masters mobile app. By playing, you acknowledge the practices described here.</p>
 <h1 id="2-who-we-are">2. WHO WE ARE</h1>
@@ -58,11 +59,12 @@
 <li>Where it is kept: collected directly by advertising software in the app.  </li>
 <li>Leaves your device: Yes, to Appodeal and its advertising network partners.</li>
 </ul>
-<h2 id="3-7-estimated-ad-revenue-totals">3.7 Estimated ad revenue totals</h2>
+<h2 id="3-7-charity-contribution-estimate">3.7 Charity contribution estimate</h2>
+<p>The estimated share of ad revenue and in-app purchases from your device that is set aside for charity, and, for players aged 13 or older, a random player ID created by the game.</p>
 <ul>
-<li>When: when an ad is shown.  </li>
-<li>Where it is kept: on your device.  </li>
-<li>Leaves your device: No. Used only to display the in-game charity contribution estimate.</li>
+<li>When: the estimate updates when an ad is shown or a purchase is made. It is sent from time to time while you play, and when you leave the game.  </li>
+<li>Where it is kept: on your device, where it is shown as the in-game charity counter, and in a Google Sheet we run through Google Apps Script, a service of Google LLC. The sheet holds one row per player aged 13 or older (the random player ID and the latest total), plus one combined row for all younger players. Our website adds the rows together to show the estimated total raised.  </li>
+<li>Leaves your device: Yes. For players aged 13 or older, only the random player ID and one dollar amount are sent. For players under 13, or whose age is not known, no player ID is sent: the game sends a shared code that is the same for every child, plus the amount earned since its last send, and the sheet adds that amount to one combined total for all children. Nothing in that total can be linked to any one player. The player ID is created by the game and is not linked to your device, advertising identifier, name or any account. A new one is created if you reinstall the game. Google receives your IP address as part of the connection, as with any internet request. We do not store it and it is not written to the sheet. Google handles it under its own privacy policy at <a target="_blank" rel="noopener noreferrer" href="https://policies.google.com/privacy">https\://policies.google.com/privacy</a>. </li>
 </ul>
 <h2 id="3-8-count-of-times-the-donation-link-was-opened">3.8 Count of times the donation link was opened</h2>
 <ul>
@@ -113,7 +115,10 @@ Error and crash reports from the game's code (error message, the code location w
 <li>Legal basis: legitimate interest. This runs entirely on your device.  </li>
 <li>Find and fix errors, crashes and performance problems, and see how runs in each mode end so difficulty can be tuned.  </li>
 <li>Information: diagnostics and performance data.  </li>
-<li>Legal basis: legitimate interest in keeping the game working.</li>
+<li>Legal basis: legitimate interest in keeping the game working.  </li>
+<li>Show the estimated total raised for charity on our website.  </li>
+<li>Information: charity contribution estimate and random player ID.  </li>
+<li>Legal basis: legitimate interest in showing players and the public what the game has raised.</li>
 </ul>
 <p>We do not sell your information for money. We do not use it for automated decisions that have legal or similarly significant effects on you.<br />
 Difficulty adjustment, mode suggestions, break prompts and recommendation ranking are calculated on your device. You can turn most of them off in Settings.</p>
@@ -123,10 +128,11 @@ Location and advertising partners. We do not send your location to anyone. Howev
 Personalized and non-personalized ads. With your permission, ads may be tailored using your advertising identifier and activity across other apps and websites. Without it, you still see ads, but they are not based on that tracking.</p>
 <h3 id="your-controls">Your controls:</h3>
 <ul>
-<li>Consent form. Where privacy law requires it, a consent form appears before ads load. Where it applies, a Privacy Options button in the main menu lets you change your choice at any time.  </li>
+<li>Consent form. Where privacy law requires it, a consent form appears before ads load. Where it applies, a Privacy Options button in Settings &gt; Ads lets you change your choice at any time.  </li>
 <li>iOS tracking prompt. On iOS, the game asks through Apple's App Tracking Transparency prompt before any tracking. Change it under Settings &gt; Privacy &amp; Security &gt; Tracking.  </li>
 <li>Android advertising ID. Reset or delete it under Settings &gt; Privacy &gt; Ads (the path varies by device).  </li>
 <li>Location. Revoke it under your device's app permission settings.  </li>
+<li>The charity contribution estimate (Section 3.7) is sent without any player ID. It is only added to one combined total shared by all children.  </li>
 <li>Notifications. Turn each reminder type on or off in the game's Settings, or disable notifications in your device settings.  </li>
 <li>Rewarded ads are always optional. You choose whether to watch one in exchange for an in-game benefit.</li>
 </ul>
@@ -143,24 +149,26 @@ Personalized and non-personalized ads. With your permission, ads may be tailored
 <p>Some countries set a higher age of digital consent, up to 16. Where a consent form is required, players below the local age should have a parent or guardian make the choice.</p>
 <p>Parents and guardians can remove all information the game has stored by deleting the app. If you believe a child has provided personal information to us, contact us at <a href="mailto:madteapartydevelopment@outlook.com">madteapartydevelopment@outlook.com</a> and we will help.</p>
 <h1 id="7-storage-retention-security-and-transfers">7. STORAGE, RETENTION, SECURITY AND TRANSFERS</h1>
-<p>Where data lives. Game data, settings, birth month and year, and location are stored in the app's private storage on your device. We operate no server that holds player data.</p>
+<p>Where data lives. Game data, settings, birth month and year, and location are stored in the app's private storage on your device. Apart from the charity contribution sheet (Section 3.7), we operate no server that holds player data.</p>
 <h3 id="how-long-it-is-kept">How long it is kept:</h3>
 <ul>
 <li>Location: used only on the day it is collected. It is deleted automatically the next time you open the game after that day, or when you delete the app.  </li>
 <li>Everything else stored by the game: kept until you delete the app or clear its data. On Android you can also use Settings &gt; Apps &gt; Mimic Masters &gt; Storage &gt; Clear storage.  </li>
-<li>Diagnostics data: kept by Sentry for the retention period of our Sentry plan, then deleted automatically. This is at most 90 days.  </li>
+<li>Charity contribution sheet: each row is kept for as long as the website shows the total raised. Deleting the app stops updates to your row. The row holds only the random player ID and the last total sent, which cannot be linked back to you.<br />
+  Diagnostics data: kept by Sentry for the retention period of our Sentry plan, then deleted automatically. This is at most 90 days.  </li>
 <li>Data collected by advertising partners: kept according to their own retention policies.</li>
 </ul>
 <p>Backups. Your device's operating system may include app data in backups you have enabled, such as iCloud or Google backups. Those backups are controlled by you and your platform provider.<br />
-Security. On-device data is protected by your device's own security. No method of storage or transmission is completely secure, and we cannot guarantee absolute security.</p>
-<p>International transfers. Sentry processes diagnostics data in the United States. Advertising partners may process data in the United States and other countries whose data protection laws may differ from those where you live. Where required, they rely on legal transfer mechanisms such as standard contractual clauses.</p>
+Security. On-device data is protected by your device's own security. No method of storage or transmission is completely secure, and we cannot guarantee absolute security.<br />
+International transfers. Sentry processes diagnostics data in the United States. Google processes the charity contribution data in the United States and other countries where it operates.</p>
 <h1 id="8-your-rights">8. YOUR RIGHTS</h1>
-<p>Deleting your data. The game has no account. Diagnostics data is not tied to you, so we cannot look up which reports came from your device, and it is deleted automatically as described in Section 7. Deleting the app, or clearing its storage, permanently erases everything the game has saved. To request help, or to ask about data held by advertising partners, email <a href="mailto:madteapartydevelopment@outlook.com">madteapartydevelopment@outlook.com</a>. </p>
+<p>Deleting your data. The game has no account. Diagnostics data and the charity contribution sheet are not tied to you, so we cannot look up which reports or which row came from your device. Diagnostics data is deleted automatically as described in Section 7. Deleting the app, or clearing its storage, permanently erases everything the game has saved. To request help, or to ask about data held by advertising partners, email <a href="mailto:madteapartydevelopment@outlook.com">madteapartydevelopment@outlook.com</a>.</p>
 <p>EEA, UK and Switzerland. You have the right to access, correct, erase, restrict or object to the processing of your personal data, the right to data portability, and the right to withdraw consent at any time. You may also complain to your local data protection authority. Because we hold no data that identifies you, most requests are fulfilled through the on-device controls above or by the relevant advertising partner. We will help direct your request.</p>
 <p>California and other US states. Depending on where you live, you may have the right to know what personal information is collected, to delete it, to correct it, and to opt out of its sale or sharing for targeted advertising.</p>
 <ul>
 <li>Categories collected through advertising software: identifiers, internet or network activity, and general location.  </li>
 <li>Categories collected through diagnostics software: a random installation ID, device information and app usage and performance data. It is used only to operate and fix the game, and is never sold or shared for advertising.  </li>
+<li>Categories sent to our charity contribution sheet: a random player ID and an estimated dollar amount. They are used only to show the total raised, and are never sold or shared for advertising.  </li>
 <li>We do not sell personal information for money. Allowing ad tracking may count as "sharing" or "sale" for targeted advertising under some state laws.  </li>
 <li>To opt out, decline or revoke tracking using the controls in Section 5.  </li>
 <li>We will not treat you differently for exercising these rights. The game plays the same either way.</li>
@@ -172,4 +180,4 @@ Questions or requests:</p>
 <ul>
 <li>March Hare Games, Alvie Spurlock  </li>
 <li>Email: <a href="mailto:madteapartydevelopment@outlook.com">madteapartydevelopment@outlook.com</a></li>
-</ul><p class="sync">Last synced from source: October 10, 2026 16:49 UTC</p></div>
+</ul><p class="sync">Last synced from source: October 13, 2026 13:41 UTC</p></div>
