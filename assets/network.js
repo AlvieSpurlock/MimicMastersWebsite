@@ -8,7 +8,7 @@ const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const TABS=isStore?[['retail','Retail'],['restaurant','Restaurant'],['entertainment','Entertainment'],['services','Services']]:[['mystudio','Our Games'],['otherstudio','Other Indie Studios']];
 const catKey=r=>norm(isStore?r.category:r.studio).replace(/[\s_-]/g,'');
-let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='',exact=null,corner=false;
+let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='',exact=null,corner=false,home=null;
 const abbr=s=>{const t=(s||'').trim();if(!t)return'';const u=t.toUpperCase();if(ST[u])return u;return Object.keys(ST).find(k=>norm(ST[k])===norm(t))||''};
 const nkey=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\bst\b\.?/g,'saint').replace(/\bmt\b\.?/g,'mount').replace(/\bft\b\.?/g,'fort').replace(/[^a-z0-9]+/g,' ').trim();
 const rad=x=>x*Math.PI/180,miles=(a,b)=>{const h=Math.sin(rad(b[1]-a[1])/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(rad(b[2]-a[2])/2)**2;return 3958.8*2*Math.asin(Math.sqrt(h))};
@@ -23,6 +23,9 @@ async function loadCities(){if(IDX)return;IDX=new Map();BYNAME=new Map();
  try{const r=await fetch('data/cities-us.json');if(r.ok){const d=await r.json();for(const st in d)for(const c of d[st]){const k=nkey(c[0]);IDX.set(k+'|'+st,c);if(!BYNAME.has(k))BYNAME.set(k,[]);BYNAME.get(k).push([st,c])}}}catch(e){}}
 function coordsFor(city,state){if(!city)return null;const k=nkey(city),a=abbr(state);
  if(a){const c=IDX.get(k+'|'+a);return c?{c,st:a}:null}const l=BYNAME.get(k);return l&&l.length===1?{c:l[0][1],st:l[0][0]}:null}
+/* Which listed town is a point in? The closest town centre in data/cities-us.json, within 15 miles. Worked out in the browser; nothing is sent. */
+function townOf(pt){let best=null,bd=15;if(!BYNAME)return null;for(const l of BYNAME.values())for(const[st,c]of l){const d=miles(pt,c);if(d<bd){bd=d;best=[c[0],st]}}return best}
+const sameTown=r=>home&&nkey(r.city)===nkey(home[0])&&(!r.state||abbr(r.state)===home[1]);
 async function resolveLoc(){U=null;note='';const city=loc.city.trim();if(!city)return;await loadCities();
  const u=coordsFor(city,loc.state);
  if(u){U=u.c;if(!abbr(loc.state))loc.state=ST[u.st]}
@@ -72,8 +75,7 @@ function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
  if(isStore){
   if(exact){const x=r._c?miles(exact,r._c):null;return x==null?[2,null]:[0,x]}   /* exact spot: only real distances count */
   const sm=s&&norm(full(r.state))===s,cm=c&&nkey(r.city)===c&&(!s||sm);
-  if(U&&r._c){const d=miles(U,r._c);return[cm?0:d<=(S.nearbyMiles||50)?0:(sm?1:2),null]}   /* typed city: distance is only approximate, so never shown or used to rank */
-  return[cm?0:sm?1:2,null]}
+  return[cm?0:2,null]}   /* typed city: only stores in that town count; nothing from nearby towns or the rest of the state */
  const g=(r.optimalregion||'').split(/[|,]/).map(norm).filter(Boolean),hit=v=>v&&g.some(x=>x===v||v.includes(x)||x.includes(v));
  return[hit(s)||hit(norm(loc.city))?0:1,null]}
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -82,7 +84,7 @@ function fairNear(l){l=l.slice().sort((a,b)=>a.d-b.d);const out=[];let i=0;
  while(i<l.length){const grp=[l[i]];let j=i+1;while(j<l.length&&miles(l[i].r._c,l[j].r._c)<=1){grp.push(l[j]);j++}out.push(...shuffle(grp));i=j}return out}
 function compute(){picks={};TABS.forEach(([k])=>{let l=rows.filter(r=>catKey(r)===k).map(r=>{const[t,d]=score(r);return{r,t,d}});
  if(isStore)l=l.filter(x=>x.t<2);
- picks[k]=(exact?fairNear(l.filter(x=>x.d!=null&&(!corner||(x.r._c[0]==='store'&&x.d<=(S.aroundCornerMiles||2))))):[0,1,2].flatMap(t=>shuffle(l.filter(x=>x.t===t)))).slice(0,isStore?30:8)});
+ picks[k]=(exact?fairNear(l.filter(x=>x.d!=null&&(corner?(x.r._c[0]==='store'&&x.d<=(S.aroundCornerMiles||2)):sameTown(x.r)))):[0,1,2].flatMap(t=>shuffle(l.filter(x=>x.t===t)))).slice(0,isStore?30:8)});
  active=(TABS.find(([k])=>picks[k].length)||TABS[0])[0]}
 function cta(a,t,c){const x=el('a','btn sm '+c,t);x.href=a;return x}
 function cornerEmpty(){const p=el('div','empty'),m=S.aroundCornerMiles||2;
@@ -146,8 +148,10 @@ if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','N
   navigator.geolocation.getCurrentPosition(async p=>{done();
    await loadCities();await ready;
    rows.forEach(r=>{if(r._c===undefined)r._c=rowC(r)});
-   exact=['you',p.coords.latitude,p.coords.longitude];corner=short;U=null;loc={city:'',state:''};sel='all';subSel='';searched=true;
-   note=short?`Showing partner stores within about ${S.aroundCornerMiles||2} miles of where you are right now, a short drive. Your location stays in your browser and is never sent or saved.`:'Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()},
+   const pt=['you',p.coords.latitude,p.coords.longitude],hm=short?null:townOf(pt);
+   if(!short&&!hm){exact=null;msg("We couldn't tell which town you are in. Use Custom to type your city and state.");return}
+   exact=pt;corner=short;home=hm;U=null;loc=hm?{city:hm[0],state:ST[hm[1]]||hm[1]}:{city:'',state:''};sel='all';subSel='';searched=true;
+   note=short?`Showing partner stores within about ${S.aroundCornerMiles||2} miles of where you are right now, a short drive. Your location stays in your browser and is never sent or saved.`:`Showing partner stores in ${hm[0]}, ${hm[1]}, closest first. Your location stays in your browser and is never sent or saved. Not your town? Use Custom.`;compute();render()},
   e=>{done();msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:0})};
  bt.onclick=()=>go(bt,'Near Me',false);ac.onclick=()=>go(ac,'Around The Corner',true)}
