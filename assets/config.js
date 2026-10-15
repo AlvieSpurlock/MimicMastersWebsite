@@ -17,6 +17,7 @@ window.SITE={
   // Press page: Google Sheet with tabs named Videos and Press (columns: Thumbnail, Description, Date, Link). Share it as "Anyone with the link: Viewer".
   pressSheetUrl:"https://docs.google.com/spreadsheets/d/1-EAeArB_0UWxSoTxya9A-qL-SpKa5cw5RTqVdsQCdNI/edit?usp=sharing",
   nearbyMiles:50,   // Store Network: how far "nearby" reaches
+  aroundCornerMiles:2,   // Store Network "Around The Corner" button: how far a short drive reaches (1 to 2 miles)
   storesCsvUrl:"https://docs.google.com/spreadsheets/d/1I-3HYszsSXz9xXAMGkrx1USPITzDeKpg9hPNqrY4rl8/edit?usp=sharing",
   gamesCsvUrl:"https://docs.google.com/spreadsheets/d/1jiBBk1qjRfI4BG0QtHvUte_sYPmSXDYixHXfyW097Z8/edit?usp=sharing",
   // Donations: ONE universal ledger for all your games (Charity | Date | Amount). This site only totals the charity named here.

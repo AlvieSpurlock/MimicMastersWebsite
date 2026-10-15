@@ -62,6 +62,12 @@ Store positions are the middle of each store's city by default. For true distanc
 
 Exact store positions, in order of priority: `Latitude`/`Longitude` columns, then coordinates found inside a **full** Google Maps link in `GoogleMapsLink` (open the short maps.app.goo.gl link, then copy the long address from the browser's address bar), then the middle of the city. An optional `Address` column is shown on the store's card. `StoreGeocoder.gs` (Extensions > Apps Script in the stores Sheet) can fill `Latitude`/`Longitude` from the `Address` column automatically.
 
+## Store Network: "Around The Corner" button
+
+Next to **Near Me** is an **Around The Corner** button for a short drive. It uses the visitor's exact location (they must allow it) and lists only stores within `aroundCornerMiles` of it (default 2, set in `assets/config.js`; use 1 for a tighter circle). Stores in range are still closest first, with stores within a mile of each other shuffled so neighbours share the top spot. Near Me is unchanged.
+
+Because the circle is small, it only counts stores with a confirmed spot: `Latitude`/`Longitude` columns, a full Google Maps link, or an `Address` filled in by StoreGeocoder. A store placed only by its city is left out, since the middle of a city could be miles from the shop. If nothing is in range, the visitor sees a message with a button to show the closest stores instead.
+
 ## Store categories and sub categories
 
 `Category` is one of **Retail**, **Restaurant**, **Entertainment** or **Services**. Add a `SubCategory` column to the stores Sheet (header spelling and capitals don't matter). Allowed values:

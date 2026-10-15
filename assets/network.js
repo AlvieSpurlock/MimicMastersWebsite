@@ -8,7 +8,7 @@ const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const TABS=isStore?[['retail','Retail'],['restaurant','Restaurant'],['entertainment','Entertainment'],['services','Services']]:[['mystudio','Our Games'],['otherstudio','Other Indie Studios']];
 const catKey=r=>norm(isStore?r.category:r.studio).replace(/[\s_-]/g,'');
-let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='',exact=null;
+let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='',exact=null,corner=false;
 const abbr=s=>{const t=(s||'').trim();if(!t)return'';const u=t.toUpperCase();if(ST[u])return u;return Object.keys(ST).find(k=>norm(ST[k])===norm(t))||''};
 const nkey=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\bst\b\.?/g,'saint').replace(/\bmt\b\.?/g,'mount').replace(/\bft\b\.?/g,'fort').replace(/[^a-z0-9]+/g,' ').trim();
 const rad=x=>x*Math.PI/180,miles=(a,b)=>{const h=Math.sin(rad(b[1]-a[1])/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(rad(b[2]-a[2])/2)**2;return 3958.8*2*Math.asin(Math.sqrt(h))};
@@ -82,9 +82,16 @@ function fairNear(l){l=l.slice().sort((a,b)=>a.d-b.d);const out=[];let i=0;
  while(i<l.length){const grp=[l[i]];let j=i+1;while(j<l.length&&miles(l[i].r._c,l[j].r._c)<=1){grp.push(l[j]);j++}out.push(...shuffle(grp));i=j}return out}
 function compute(){picks={};TABS.forEach(([k])=>{let l=rows.filter(r=>catKey(r)===k).map(r=>{const[t,d]=score(r);return{r,t,d}});
  if(isStore)l=l.filter(x=>x.t<2);
- picks[k]=(exact?fairNear(l.filter(x=>x.d!=null)):[0,1,2].flatMap(t=>shuffle(l.filter(x=>x.t===t)))).slice(0,isStore?30:8)});
+ picks[k]=(exact?fairNear(l.filter(x=>x.d!=null&&(!corner||(x.r._c[0]==='store'&&x.d<=(S.aroundCornerMiles||2))))):[0,1,2].flatMap(t=>shuffle(l.filter(x=>x.t===t)))).slice(0,isStore?30:8)});
  active=(TABS.find(([k])=>picks[k].length)||TABS[0])[0]}
 function cta(a,t,c){const x=el('a','btn sm '+c,t);x.href=a;return x}
+function cornerEmpty(){const p=el('div','empty'),m=S.aroundCornerMiles||2;
+ p.append(el('h3','','Nothing around the corner yet'),
+  el('p','',`No partner stores with a confirmed address are within ${m} miles of you right now. The network is growing.`));
+ const c=el('div','cta'),a=el('button','btn sm tl','Show the closest stores');a.type='button';
+ a.onclick=()=>{corner=false;note='Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()};
+ c.append(a,cta('recommend-store.html','Recommend a spot nearby','pk'));
+ c.style.cssText='display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap';p.append(c);return p}
 function emptyPanel(){const p=el('div','empty'),place=[loc.city,loc.state].filter(Boolean).join(', ');
  p.append(el('h3','',isStore?'No partner stores here yet':'Coming soon'),
   el('p','',isStore?`We haven't partnered with a store${place?' in '+place:''} yet, but the network is growing. Do you own a store in the area?`:'No studios are listed here yet. Are you an indie developer?'));
@@ -107,7 +114,7 @@ function card(x){const r=x.r,c=el('article','row');
 function render(){const out=document.getElementById('results');out.replaceChildren();if(note&&searched)out.append(el('p','meta',note));
  if(!searched){out.append(el('p','','Enter your city and state above to find partner stores near you.'));return}
  const total=TABS.reduce((n,[k])=>n+picks[k].length,0);
- if(!total){out.append(emptyPanel());return}
+ if(!total){out.append(corner&&exact?cornerEmpty():emptyPanel());return}
  if(isStore){renderStores(out);return}
  const bar=el('div','ntabs');bar.setAttribute('role','tablist');
  TABS.forEach(([k,n])=>{const b=el('button','',`${n} (${picks[k].length})`);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',k===active);b.onclick=()=>{active=k;render()};bar.append(b)});
@@ -115,20 +122,23 @@ function render(){const out=document.getElementById('results');out.replaceChildr
  if(!picks[active].length)out.append(emptyPanel());else{const l=el('div','rows');picks[active].forEach(x=>l.append(card(x)));out.append(l)}}
 const ready=load().then(d=>{rows=d;compute();render()});
 document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault();
- exact=null;loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
+ exact=null;corner=false;loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
  if(isStore&&!norm(loc.city)&&!norm(loc.state)){document.getElementById('results').textContent='Please enter a city and state first.';return}
  sel='all';subSel='';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
 
-if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me');bt.type='button';bt.id='nearme';f.append(bt);
+if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me'),ac=el('button','btn tl','Around The Corner');
+ bt.type='button';bt.id='nearme';ac.type='button';ac.id='aroundcorner';f.append(bt,ac);
  const msg=t=>{note=t;searched=true;render()};
- bt.onclick=()=>{
+ const go=(btn,label,short)=>{
   if(!navigator.geolocation){msg('Your browser cannot share its location. Type your city and state instead.');return}
-  bt.disabled=true;bt.textContent='Finding you…';
-  navigator.geolocation.getCurrentPosition(async p=>{bt.disabled=false;bt.textContent='Near Me';
+  bt.disabled=ac.disabled=true;btn.textContent='Finding you…';
+  const done=()=>{bt.disabled=ac.disabled=false;btn.textContent=label};
+  navigator.geolocation.getCurrentPosition(async p=>{done();
    await loadCities();await ready;
    rows.forEach(r=>{if(r._c===undefined)r._c=rowC(r)});
-   exact=['you',p.coords.latitude,p.coords.longitude];U=null;loc={city:'',state:''};sel='all';subSel='';searched=true;
-   note='Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()},
-  e=>{bt.disabled=false;bt.textContent='Near Me';msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
-  {enableHighAccuracy:true,timeout:15000,maximumAge:0})}}
+   exact=['you',p.coords.latitude,p.coords.longitude];corner=short;U=null;loc={city:'',state:''};sel='all';subSel='';searched=true;
+   note=short?`Showing partner stores within about ${S.aroundCornerMiles||2} miles of where you are right now, a short drive. Your location stays in your browser and is never sent or saved.`:'Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()},
+  e=>{done();msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
+  {enableHighAccuracy:true,timeout:15000,maximumAge:0})};
+ bt.onclick=()=>go(bt,'Near Me',false);ac.onclick=()=>go(ac,'Around The Corner',true)}
 })();
