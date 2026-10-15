@@ -8,11 +8,17 @@ const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const TABS=isStore?[['retail','Retail'],['restaurant','Restaurant'],['entertainment','Entertainment']]:[['mystudio','Our Games'],['otherstudio','Other Indie Studios']];
 const catKey=r=>norm(isStore?r.category:r.studio).replace(/[\s_-]/g,'');
-let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='';
+let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='',exact=null;
 const abbr=s=>{const t=(s||'').trim();if(!t)return'';const u=t.toUpperCase();if(ST[u])return u;return Object.keys(ST).find(k=>norm(ST[k])===norm(t))||''};
 const nkey=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\bst\b\.?/g,'saint').replace(/\bmt\b\.?/g,'mount').replace(/\bft\b\.?/g,'fort').replace(/[^a-z0-9]+/g,' ').trim();
 const rad=x=>x*Math.PI/180,miles=(a,b)=>{const h=Math.sin(rad(b[1]-a[1])/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(rad(b[2]-a[2])/2)**2;return 3958.8*2*Math.asin(Math.sqrt(h))};
 let IDX=null,BYNAME=null;
+/* A store's spot: exact Latitude/Longitude columns if the Sheet has them, otherwise the middle of its city. */
+const fromLink=u=>{u=String(u||'');let m=u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||u.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/i);
+ return m?[parseFloat(m[1]),parseFloat(m[2])]:null};
+const rowC=r=>{let la=parseFloat(r.latitude||r.lat),lo=parseFloat(r.longitude||r.lng||r.lon);   /* 1) Latitude/Longitude columns  2) coordinates inside a full Google Maps link  3) middle of the city */
+ if(!(isFinite(la)&&isFinite(lo))){const f=fromLink(r.googlemapslink);if(f)[la,lo]=f}
+ if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180)return['store',la,lo];const x=coordsFor(r.city,r.state);return x?x.c:null};
 async function loadCities(){if(IDX)return;IDX=new Map();BYNAME=new Map();
  try{const r=await fetch('data/cities-us.json');if(r.ok){const d=await r.json();for(const st in d)for(const c of d[st]){const k=nkey(c[0]);IDX.set(k+'|'+st,c);if(!BYNAME.has(k))BYNAME.set(k,[]);BYNAME.get(k).push([st,c])}}}catch(e){}}
 function coordsFor(city,state){if(!city)return null;const k=nkey(city),a=abbr(state);
@@ -21,7 +27,7 @@ async function resolveLoc(){U=null;note='';const city=loc.city.trim();if(!city)r
  const u=coordsFor(city,loc.state);
  if(u){U=u.c;if(!abbr(loc.state))loc.state=ST[u.st]}
  else note=`We couldn't pinpoint "${city}"${loc.state.trim()?'':' (try adding your state)'}, so results are matched on the text you typed. Try the nearest larger city if needed.`;
- if(isStore)rows.forEach(r=>{if(r._c===undefined){const x=coordsFor(r.city,r.state);r._c=x?x.c:null}})}
+ if(isStore)rows.forEach(r=>{if(r._c===undefined)r._c=rowC(r)})}
 function parseCSV(t){t=t.replace(/^\uFEFF/,'');const out=[];let r=[],f='',q=false;
  for(let i=0;i<t.length;i++){const c=t[i];
   if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
@@ -33,7 +39,7 @@ function parseCSV(t){t=t.replace(/^\uFEFF/,'');const out=[];let r=[],f='',q=fals
 const ICON={retail:'🛍️',restaurant:'🍽️',entertainment:'🎮'};
 const fetchText=async u=>{try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const t=await r.text();if(t.trim()&&!/^\s*</.test(t))return t}}catch(e){}return null};
 const pick1=(r,...k)=>{for(const x of k)if(r[x])return r[x];return''};
-const fix=r=>{r.storename=pick1(r,'storename','name','store');r.googlemapslink=pick1(r,'googlemapslink','mapslink','maps','map');r.imagelink=pick1(r,'imagelink','image','thumbnail','photo');r.notes=pick1(r,'notes','description');return r};
+const fix=r=>{r.storename=pick1(r,'storename','name','store');r.googlemapslink=pick1(r,'googlemapslink','mapslink','maps','map');r.imagelink=pick1(r,'imagelink','image','thumbnail','photo');r.notes=pick1(r,'notes','description');r.address=pick1(r,'address','streetaddress');return r};
 async function loadRaw(){const u=isStore?S.storesCsvUrl:S.gamesCsvUrl,id=(u||'').match(/\/spreadsheets\/d\/([\w-]+)/);
  if(id){const g=tab=>`https://docs.google.com/spreadsheets/d/${id[1]}/gviz/tq?tqx=out:csv`+(tab?'&sheet='+encodeURIComponent(tab):'');
   if(isStore){
@@ -58,15 +64,20 @@ function renderStores(out){const total=TABS.reduce((n,[k])=>n+picks[k].length,0)
   else s.append(el('p','meta',`No ${n.toLowerCase()} partners near you yet.`),cta('recommend-store.html',`Recommend ${/^[aeiou]/i.test(n)?'an':'a'} ${n.toLowerCase()} spot`,'pk'));
   out.append(s)})}
 function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
- if(isStore){const sm=s&&norm(full(r.state))===s;
-  if(U&&r._c){const d=miles(U,r._c);return[d<=(S.nearbyMiles||50)?0:(sm?1:2),d]}
-  return[c&&nkey(r.city)===c&&(!s||sm)?0:sm?1:2,null]}
+ if(isStore){
+  if(exact){const x=r._c?miles(exact,r._c):null;return x==null?[2,null]:[0,x]}   /* exact spot: only real distances count */
+  const sm=s&&norm(full(r.state))===s,cm=c&&nkey(r.city)===c&&(!s||sm);
+  if(U&&r._c){const d=miles(U,r._c);return[cm?0:d<=(S.nearbyMiles||50)?0:(sm?1:2),null]}   /* typed city: distance is only approximate, so never shown or used to rank */
+  return[cm?0:sm?1:2,null]}
  const g=(r.optimalregion||'').split(/[|,]/).map(norm).filter(Boolean),hit=v=>v&&g.some(x=>x===v||v.includes(x)||x.includes(v));
  return[hit(s)||hit(norm(loc.city))?0:1,null]}
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+/* Closest first, but stores within 2 miles of each other swap places at random, so close neighbours each get a fair turn at the top. */
+function fairNear(l){l=l.slice().sort((a,b)=>a.d-b.d);const out=[];let i=0;
+ while(i<l.length){const grp=[l[i]];let j=i+1;while(j<l.length&&miles(l[i].r._c,l[j].r._c)<=2){grp.push(l[j]);j++}out.push(...shuffle(grp));i=j}return out}
 function compute(){picks={};TABS.forEach(([k])=>{let l=rows.filter(r=>catKey(r)===k).map(r=>{const[t,d]=score(r);return{r,t,d}});
  if(isStore)l=l.filter(x=>x.t<2);
- picks[k]=[0,1,2].flatMap(t=>{const g=l.filter(x=>x.t===t);return g.some(x=>x.d!=null)?g.sort((a,b)=>(a.d??1e9)-(b.d??1e9)):shuffle(g)}).slice(0,isStore?30:8)});
+ picks[k]=(exact?fairNear(l.filter(x=>x.d!=null)):[0,1,2].flatMap(t=>shuffle(l.filter(x=>x.t===t)))).slice(0,isStore?30:8)});
  active=(TABS.find(([k])=>picks[k].length)||TABS[0])[0]}
 function cta(a,t,c){const x=el('a','btn sm '+c,t);x.href=a;return x}
 function emptyPanel(){const p=el('div','empty'),place=[loc.city,loc.state].filter(Boolean).join(', ');
@@ -77,7 +88,9 @@ function emptyPanel(){const p=el('div','empty'),place=[loc.city,loc.state].filte
 function card(x){const r=x.r,c=el('article','row');
  const b=el('div','rb');
  if(isStore){b.append(el('h3','',r.storename),el('p','meta',[r.city,r.state].filter(Boolean).join(', ')));
-  if(x.t<2){const m=x.d!=null?` · ${Math.max(1,Math.round(x.d))} mi away`:'';b.append(el('span','badge',(x.t===0?(x.d!=null?'Nearby':'In your city'):'In your state')+m))}
+  if(exact&&x.d!=null)b.append(el('span','badge',(x.d<0.5?'Less than half a mile':x.d<10?x.d.toFixed(1)+' mi':Math.round(x.d)+' mi')+' away'));
+  else if(!exact&&x.t<2)b.append(el('span','badge',x.t===0?(nkey(r.city)===nkey(loc.city)?'In your city':'In your area'):'In your state'))
+  if(r.address)b.append(el('p','meta',r.address));
   if(r.notes)b.append(el('p','',r.notes));
   const a=cta(safe(r.googlemapslink)||'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([r.storename,r.city,r.state].join(' ')),'Open in Google Maps','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}
  else{b.append(el('h3','',r.gamename),el('p','meta',r.studioname));
@@ -96,7 +109,20 @@ function render(){const out=document.getElementById('results');out.replaceChildr
  if(!picks[active].length)out.append(emptyPanel());else{const l=el('div','rows');picks[active].forEach(x=>l.append(card(x)));out.append(l)}}
 const ready=load().then(d=>{rows=d;compute();render()});
 document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault();
- loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
+ exact=null;loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
  if(isStore&&!norm(loc.city)&&!norm(loc.state)){document.getElementById('results').textContent='Please enter a city and state first.';return}
  sel='all';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
+
+if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','📍 Near Me');bt.type='button';bt.id='nearme';f.append(bt);
+ const msg=t=>{note=t;searched=true;render()};
+ bt.onclick=()=>{
+  if(!navigator.geolocation){msg('Your browser cannot share its location. Type your city and state instead.');return}
+  bt.disabled=true;bt.textContent='Finding you…';
+  navigator.geolocation.getCurrentPosition(async p=>{bt.disabled=false;bt.textContent='📍 Near Me';
+   await loadCities();await ready;
+   rows.forEach(r=>{if(r._c===undefined)r._c=rowC(r)});
+   exact=['you',p.coords.latitude,p.coords.longitude];U=null;loc={city:'',state:''};sel='all';searched=true;
+   note='Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()},
+  e=>{bt.disabled=false;bt.textContent='📍 Near Me';msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
+  {enableHighAccuracy:true,timeout:15000,maximumAge:0})}}
 })();

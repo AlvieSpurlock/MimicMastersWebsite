@@ -53,3 +53,11 @@ Share the Sheet as **Anyone with the link: Viewer**. Tabs:
 - **`Estimate` tab, optional fallback**: headers `Amount`, `AsOf`, one row typed by hand. Used only while `Players` is empty.
 
 To use a different Sheet or tab name, add `donationsSheetUrl:"https://docs.google.com/spreadsheets/d/.../edit"` and/or `contributionsSheetUrl:"https://docs.google.com/spreadsheets/d/.../edit"` and/or `donationsContribTab:"Players"` to `assets/config.js`.
+
+## Store Network: "Near Me" button
+
+Next to "Find Stores" is a **Near Me** button. It asks the browser for the visitor's exact location (the visitor must allow it), then sorts stores by real distance. Stores within 2 miles of each other are shuffled at random on each search so close neighbours share the top spot fairly. The location stays in the browser and is never sent or saved. Typing a city and state still works and shows only "In your city / In your area / In your state" (no distances, since a city has no exact point).
+
+Store positions are the middle of each store's city by default. For true distances, add optional `Latitude` and `Longitude` columns to the stores Sheet (right-click the place in Google Maps and click the numbers to copy them).
+
+Exact store positions, in order of priority: `Latitude`/`Longitude` columns, then coordinates found inside a **full** Google Maps link in `GoogleMapsLink` (open the short maps.app.goo.gl link, then copy the long address from the browser's address bar), then the middle of the city. An optional `Address` column is shown on the store's card. `StoreGeocoder.gs` (Extensions > Apps Script in the stores Sheet) can fill `Latitude`/`Longitude` from the `Address` column automatically.

@@ -1,0 +1,63 @@
+# Mimic Masters Website
+
+Official website for **Mimic Masters**, hosted on GitHub Pages.
+
+Live site: https://alviespurlock.github.io/MimicMastersWebsite/
+
+## Pages (31)
+
+| Group | Pages |
+|---|---|
+| Landing | `index.html` |
+| Game Modes (7) | `classic`, `cadence-tracker`, `parry-madness`, `elemental-bash`, `shuffle-board`, `quantum-overload`, `battle-for-time` |
+| Features (3) | `accessibility`, `customization`, `adjustable-ads` |
+| Feedback (2) | `feedback-in-depth`, `feedback-short` |
+| Store Network | `store-network` (+ forms `recommend-store`, `signup-store`) |
+| Ethical Indie Dev Coalition | `ethical-indie-dev-coalition` (+ forms `recommend-indie-dev`, `signup-indie-dev`) |
+| Community | `community` (Discord, YouTube Business, YouTube Personal, Twitch), `coverage`, `press`, `contact` |
+| Other | `charity` (Charity Dedication), `about-creator` |
+| Testers | `android-tester`, `ios-tester` |
+| Help / Legal | `support`, `privacy` |
+
+## Things you edit
+
+- **Social links:** `assets/config.js` (Discord, YouTube Business, YouTube Personal, Twitch). Empty links show "Link coming soon".
+- **Store Network data:** `data/stores.csv` (columns: StoreName, City, State, Category, RelevantHabit, AgeGroup, Notes, GoogleMapsLink, ImageLink). Category: Retail, Restaurant or Entertainment.
+- **Coalition criteria:** high-quality games, at least 10% to a grassroots charity, no controversies in the last year (edit in `ethical-indie-dev-coalition.html`), plus the "All For One, One For All" pledge with its three sub-points.
+- **Indie Dev Coalition data:** `data/games.csv` (columns: GameName, StoreLink, Studio, StudioName, RelevantHabit, AgeGroup, OptimalRegion, ImageLink). Studio: MyStudio or OtherStudio. OptimalRegion can list several, separated by `|`.
+- **Store Network sections:** results are grouped into Retail, Restaurant and Entertainment. The Google Sheet can use tabs named exactly `Retail`, `Restaurant`, `Entertainment`, or a single sheet with a `Category` column. Header spacing and capitalization don't matter ("Image Link" = `ImageLink`). ImageLink, RelevantHabit and AgeGroup are app-only and are not shown on the site.
+- **App store buttons:** the landing page shows App Store and Google Play logos (inside the title card on PC, under it on mobile). Set `stores.ios` / `stores.android` in `assets/config.js` when the apps are live; until then they open `join-ios.html` / `join-android.html` (Discord + tester prompts). `appleFocused` picks which logo comes first when the visitor's platform can't be detected.
+- **Press & Social downloads:** `downloads/press-assets.zip` (full quality) and `downloads/social-assets.zip` (post-ready), linked from the Press page.
+- **Live data (optional):** publish a Google Sheet to the web as CSV and paste the link into `storesCsvUrl` / `gamesCsvUrl` in `assets/config.js`.
+- **Press:** a Google Sheet (`pressSheetUrl` in `assets/config.js`, shared as Anyone with the link: Viewer) with two tabs named `Videos` and `Press`. Columns in each: `Thumbnail`, `Description`, `Date`, `Link`. Thumbnail can be an image URL or a Google Drive share link; for YouTube links it can be left blank. Put `press-assets.zip` and `social-assets.zip` in `downloads/` for the two download buttons.
+- **Nearby search:** `data/cities-us.json` (built from GeoNames `cities500.txt`, US places only) turns the typed city into coordinates; stores are listed nearest first within `nearbyMiles` (default 50) in `assets/config.js`, then same-state stores. City data © [GeoNames](https://www.geonames.org/) (CC BY 4.0), credited on the lookup pages.
+- **Visitor location** is typed by the visitor, used only in their browser, and never sent or stored.
+
+## Privacy Policy auto-sync
+
+`.github/workflows/sync-privacy.yml` runs `scripts/sync_privacy.py` every 6 hours (Google Doc → parser → Markdown-to-HTML converter → formatter → `assets/privacy-content.html`). Do not edit that output file by hand. The Doc must be shared as "Anyone with the link: Viewer" and Actions needs "Read and write permissions".
+
+## Forms
+
+Forms embed Google Forms via their responder links. They must not require sign-in: no file uploads, "Limit to 1 response" off, email collection set to "Do not collect" or "Responder input".
+
+If you edit locally, **Pull before you Push**, because the sync bot commits to this repo.
+
+## Donations (Charity page and Landing page)
+
+`assets/donations.js` fills the "Giving So Far" block on `charity.html` and the "Giving Back" block on `index.html` with two totals: Estimated raised (from players) and Donated so far (from the ledger). Nothing is shown until there is data.
+
+Share the Sheet as **Anyone with the link: Viewer**. Tabs:
+- **First tab, the ledger** (one universal ledger for ALL your games): headers `Charity`, `Date`, `Amount`, one row per donation you make. This site only totals and lists rows whose Charity matches `donationCharity` in `assets/config.js` (currently ASAN). Other games' charities are ignored here.
+- **Contributions sheet (a second Sheet, also shared Anyone with the link: Viewer), tab `Players`**: columns `PlayerID`, `Contribution`, `Updated`, one row per player. Each game reports its lifetime estimated charity dollars through an Apps Script web app (`ContributionReceiver.gs`) using a random player id (`ContributionReporter.cs` in the Unity project). The site adds the `Contribution` column up for "Estimated raised" (always flagged ESTIMATE). Setup is in the header of `ContributionReceiver.gs`.
+- **`Estimate` tab, optional fallback**: headers `Amount`, `AsOf`, one row typed by hand. Used only while `Players` is empty.
+
+To use a different Sheet or tab name, add `donationsSheetUrl:"https://docs.google.com/spreadsheets/d/.../edit"` and/or `contributionsSheetUrl:"https://docs.google.com/spreadsheets/d/.../edit"` and/or `donationsContribTab:"Players"` to `assets/config.js`.
+
+## Store Network: "Near Me" button
+
+Next to "Find Stores" is a **Near Me** button. It asks the browser for the visitor's exact location (the visitor must allow it), then sorts stores by real distance. Stores within 2 miles of each other are shuffled at random on each search so close neighbours share the top spot fairly. The location stays in the browser and is never sent or saved. Typing a city and state still works and shows only "In your city / In your area / In your state" (no distances, since a city has no exact point).
+
+Store positions are the middle of each store's city by default. For true distances, add optional `Latitude` and `Longitude` columns to the stores Sheet (right-click the place in Google Maps and click the numbers to copy them).
+
+Exact store positions, in order of priority: `Latitude`/`Longitude` columns, then coordinates found inside a **full** Google Maps link in `GoogleMapsLink` (open the short maps.app.goo.gl link, then copy the long address from the browser's address bar), then the middle of the city. An optional `Address` column is shown on the store's card. `StoreGeocoder.gs` (Extensions > Apps Script in the stores Sheet) can fill `Latitude`/`Longitude` from the `Address` column automatically.
