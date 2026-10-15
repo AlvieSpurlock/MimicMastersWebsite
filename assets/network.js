@@ -127,7 +127,8 @@ document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault
  sel='all';subSel='';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
 
 if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me'),ac=el('button','btn tl','Around The Corner');
- bt.type='button';bt.id='nearme';ac.type='button';ac.id='aroundcorner';f.append(bt,ac);
+ bt.type='button';bt.id='nearme';ac.type='button';ac.id='aroundcorner';
+ const grp=el('div','locbtns');grp.style.cssText='display:flex;gap:.8rem;flex-wrap:wrap;flex:1 1 100%';grp.append(bt,ac);f.append(grp);   /* the two location buttons sit together on their own row */
  const msg=t=>{note=t;searched=true;render()};
  const go=(btn,label,short)=>{
   if(!navigator.geolocation){msg('Your browser cannot share its location. Type your city and state instead.');return}
