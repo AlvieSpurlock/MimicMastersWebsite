@@ -128,7 +128,12 @@ document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault
 
 if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me'),ac=el('button','btn tl','Around The Corner');
  bt.type='button';bt.id='nearme';ac.type='button';ac.id='aroundcorner';
- const grp=el('div','locbtns');grp.style.cssText='display:flex;gap:.8rem;flex-wrap:wrap;flex:1 1 100%';grp.append(bt,ac);f.append(grp);   /* the two location buttons sit together on their own row */
+ /* Layout: City and State side by side, then Find Stores, Near Me and Around The Corner stacked in one column. Sign Up and Recommend stack in a matching column on the right. */
+ const row=el('div','');row.style.cssText='display:flex;gap:.8rem;flex-wrap:wrap';
+ f.querySelectorAll('label').forEach(l=>{l.style.flex='1 1 9rem';row.append(l)});
+ const find=f.querySelector('button[type=submit]'),grp=el('div','locbtns');grp.style.cssText='display:flex;flex-direction:column;gap:.7rem;align-items:stretch';
+ grp.append(find,bt,ac);f.style.cssText='display:flex;flex-direction:column;gap:.9rem;align-items:stretch;flex:0 1 26rem';f.append(row,grp);
+ const ct=document.querySelector('.lookup .ctas');if(ct)ct.style.cssText='display:flex;flex-direction:column;gap:.7rem;align-items:stretch';
  const msg=t=>{note=t;searched=true;render()};
  const go=(btn,label,short)=>{
   if(!navigator.geolocation){msg('Your browser cannot share its location. Type your city and state instead.');return}
