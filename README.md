@@ -56,7 +56,7 @@ To use a different Sheet or tab name, add `donationsSheetUrl:"https://docs.googl
 
 ## Store Network: "Near Me" button
 
-Next to "Find Stores" is a **Near Me** button. It asks the browser for the visitor's exact location (the visitor must allow it), then sorts stores by real distance. Stores within 1 mile of each other are shuffled at random on each search so close neighbours share the top spot fairly. The location stays in the browser and is never sent or saved. Typing a city and state still works and shows only "In your city / In your area / In your state" (no distances, since a city has no exact point).
+The search opens with three buttons in a row: **Near Me**, **Around The Corner** and **Custom**. **Custom** swaps them for the City and State boxes and **Find Stores**, with a **Back** button centred underneath that returns to the three. **Near Me** asks the browser for the visitor's exact location (the visitor must allow it), then sorts stores by real distance. Stores within 1 mile of each other are shuffled at random on each search so close neighbours share the top spot fairly. The location stays in the browser and is never sent or saved. Typing a city and state still works and shows only "In your city / In your area / In your state" (no distances, since a city has no exact point).
 
 Store positions are the middle of each store's city by default. For true distances, add optional `Latitude` and `Longitude` columns to the stores Sheet (right-click the place in Google Maps and click the numbers to copy them).
 
@@ -64,7 +64,7 @@ Exact store positions, in order of priority: `Latitude`/`Longitude` columns, the
 
 ## Store Network: "Around The Corner" button
 
-Next to **Near Me** is an **Around The Corner** button for a short drive. It uses the visitor's exact location (they must allow it) and lists only stores within `aroundCornerMiles` of it (default 2, set in `assets/config.js`; use 1 for a tighter circle). Stores in range are still closest first, with stores within a mile of each other shuffled so neighbours share the top spot. Near Me is unchanged.
+**Around The Corner** is the short-drive button next to Near Me. It uses the visitor's exact location (they must allow it) and lists only stores within `aroundCornerMiles` of it (default 2, set in `assets/config.js`; use 1 for a tighter circle). Stores in range are still closest first, with stores within a mile of each other shuffled so neighbours share the top spot. Near Me is unchanged.
 
 Because the circle is small, it only counts stores with a confirmed spot: `Latitude`/`Longitude` columns, a full Google Maps link, or an `Address` filled in by StoreGeocoder. A store placed only by its city is left out, since the middle of a city could be miles from the shop. If nothing is in range, the visitor sees a message with a button to show the closest stores instead.
 

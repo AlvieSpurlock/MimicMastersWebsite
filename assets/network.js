@@ -112,7 +112,7 @@ function card(x){const r=x.r,c=el('article','row');
   const l=safe(r.storelink);if(l){const a=cta(l,'Get the Game','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}}
  c.append(b);return c}
 function render(){const out=document.getElementById('results');out.replaceChildren();if(note&&searched)out.append(el('p','meta',note));
- if(!searched){out.append(el('p','','Enter your city and state above to find partner stores near you.'));return}
+ if(!searched){out.append(el('p','',isStore?'Choose Near Me, Around The Corner or Custom above to find partner stores near you.':'Enter your city and state above to find partner stores near you.'));return}
  const total=TABS.reduce((n,[k])=>n+picks[k].length,0);
  if(!total){out.append(corner&&exact?cornerEmpty():emptyPanel());return}
  if(isStore){renderStores(out);return}
@@ -128,12 +128,16 @@ document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault
 
 if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me'),ac=el('button','btn tl','Around The Corner');
  bt.type='button';bt.id='nearme';ac.type='button';ac.id='aroundcorner';
- /* Layout: City and State side by side, then Find Stores, Near Me and Around The Corner stacked in one column. Sign Up and Recommend stack in a matching column on the right. */
- const row=el('div','');row.style.cssText='display:flex;gap:.8rem;flex-wrap:wrap';
- f.querySelectorAll('label').forEach(l=>{l.style.flex='1 1 9rem';row.append(l)});
- const find=f.querySelector('button[type=submit]'),grp=el('div','locbtns');grp.style.cssText='display:flex;flex-direction:column;gap:.7rem;align-items:stretch';
- grp.append(find,bt,ac);f.style.cssText='display:flex;flex-direction:column;gap:.9rem;align-items:stretch;flex:0 1 26rem';f.append(row,grp);
- const ct=document.querySelector('.lookup .ctas');if(ct)ct.style.cssText='display:flex;flex-direction:column;gap:.7rem;align-items:stretch';
+ /* Layout: three buttons in a row (Near Me, Around The Corner, Custom). Custom swaps them for the City and State boxes with a Back button centred underneath. */
+ const cu=el('button','btn tl','Custom');cu.type='button';cu.id='customloc';
+ const find=f.querySelector('button[type=submit]'),labels=[...f.querySelectorAll('label')];
+ const A=el('div','locmodes');A.style.cssText='display:flex;gap:.8rem;flex-wrap:wrap;align-items:center';A.append(bt,ac,cu);
+ const B=el('div','loccustom');B.style.cssText='display:none;flex-direction:column;gap:1rem;align-items:stretch';
+ const r=el('div','');r.style.cssText='display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end';labels.forEach(l=>r.append(l));r.append(find);
+ const back=el('button','btn sm dk','Back');back.type='button';back.id='locback';back.style.alignSelf='center';B.append(r,back);
+ f.style.cssText='display:flex;flex-direction:column;align-items:stretch';f.append(A,B);
+ cu.onclick=()=>{A.style.display='none';B.style.display='flex';document.getElementById('city').focus()};
+ back.onclick=()=>{B.style.display='none';A.style.display='flex';cu.focus()};
  const msg=t=>{note=t;searched=true;render()};
  const go=(btn,label,short)=>{
   if(!navigator.geolocation){msg('Your browser cannot share its location. Type your city and state instead.');return}
