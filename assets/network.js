@@ -63,10 +63,10 @@ function renderStores(out){const total=TABS.reduce((n,[k])=>n+picks[k].length,0)
  out.append(bar);
  if(sel!=='all'&&SUBS[sel]){const sb=el('div','ntabs'),mk=(v,t)=>{const c=v?picks[sel].filter(x=>skey(x.r.subcategory)===skey(v)).length:picks[sel].length,b=el('button','',`${t} (${c})`);b.type='button';b.setAttribute('aria-pressed',skey(subSel)===skey(v));b.onclick=()=>{subSel=v;render()};sb.append(b)};sb.setAttribute('role','group');mk('','All '+TABS.find(([k])=>k===sel)[1]);SUBS[sel].forEach(v=>mk(v,v));out.append(sb)}
  TABS.filter(([k])=>sel==='all'||sel===k).forEach(([k,n])=>{
-  const list=sel===k&&subSel?picks[k].filter(x=>skey(x.r.subcategory)===skey(subSel)):picks[k],shown=sel==='all'?list.slice(0,6):list,s=el('section','cat');s.append(el('h3','cat-h',`${ICON[k]} ${n}`));
+  const list=sel===k&&subSel?picks[k].filter(x=>skey(x.r.subcategory)===skey(subSel)):picks[k],shown=sel==='all'?list.slice(0,6):list,s=el('section','cat'),subL=sel===k&&subSel?(SUBS[k]||[]).find(v=>skey(v)===skey(subSel))||subSel:'',full=subL?`${n} - ${subL}`:n;s.append(el('h3','cat-h',`${ICON[k]} ${full}`));
   if(shown.length){const l=el('div','rows');shown.forEach(x=>l.append(card(x)));s.append(l);
    if(shown.length<list.length){const m=el('button','btn sm tl',`See all ${list.length} ${one(n)} spots`);m.type='button';m.onclick=()=>{sel=k;subSel='';render()};s.append(m)}}
-  else s.append(el('p','meta',`No ${one(n)} partners near you yet.`),cta('recommend-store.html',`Recommend ${/^[aeiou]/i.test(one(n))?'an':'a'} ${one(n)} spot`,'pk'));
+  else s.append(el('p','meta',subL?`No ${n.toLowerCase()} - ${subL.toLowerCase()} partners near you yet.`:`No ${one(n)} partners near you yet.`),cta('recommend-store.html',`Recommend ${/^[aeiou]/i.test(one(n))?'an':'a'} ${one(n)} spot`,'pk'));
   out.append(s)})}
 function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
  if(isStore){
