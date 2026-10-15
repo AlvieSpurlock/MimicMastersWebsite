@@ -22,7 +22,7 @@ Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 ## Things you edit
 
 - **Social links:** `assets/config.js` (Discord, YouTube Business, YouTube Personal, Twitch). Empty links show "Link coming soon".
-- **Store Network data:** `data/stores.csv` (columns: StoreName, City, State, Category, RelevantHabit, AgeGroup, Notes, GoogleMapsLink, ImageLink). Category: Retail, Restaurant or Entertainment.
+- **Store Network data:** `data/stores.csv` (columns: StoreName, City, State, Category, RelevantHabit, AgeGroup, Notes, GoogleMapsLink, ImageLink). Category: Retail, Restaurant, Entertainment or Services (plus an optional SubCategory column).
 - **Coalition criteria:** high-quality games, at least 10% to a grassroots charity, no controversies in the last year (edit in `ethical-indie-dev-coalition.html`), plus the "All For One, One For All" pledge with its three sub-points.
 - **Indie Dev Coalition data:** `data/games.csv` (columns: GameName, StoreLink, Studio, StudioName, RelevantHabit, AgeGroup, OptimalRegion, ImageLink). Studio: MyStudio or OtherStudio. OptimalRegion can list several, separated by `|`.
 - **Store Network sections:** results are grouped into Retail, Restaurant and Entertainment. The Google Sheet can use tabs named exactly `Retail`, `Restaurant`, `Entertainment`, or a single sheet with a `Category` column. Header spacing and capitalization don't matter ("Image Link" = `ImageLink`). ImageLink, RelevantHabit and AgeGroup are app-only and are not shown on the site.
@@ -61,3 +61,16 @@ Next to "Find Stores" is a **Near Me** button. It asks the browser for the visit
 Store positions are the middle of each store's city by default. For true distances, add optional `Latitude` and `Longitude` columns to the stores Sheet (right-click the place in Google Maps and click the numbers to copy them).
 
 Exact store positions, in order of priority: `Latitude`/`Longitude` columns, then coordinates found inside a **full** Google Maps link in `GoogleMapsLink` (open the short maps.app.goo.gl link, then copy the long address from the browser's address bar), then the middle of the city. An optional `Address` column is shown on the store's card. `StoreGeocoder.gs` (Extensions > Apps Script in the stores Sheet) can fill `Latitude`/`Longitude` from the `Address` column automatically.
+
+## Store categories and sub categories
+
+`Category` is one of **Retail**, **Restaurant**, **Entertainment** or **Services**. Add a `SubCategory` column to the stores Sheet (header spelling and capitals don't matter). Allowed values:
+
+| Category | SubCategory |
+|---|---|
+| Retail | Clothes, Weapons, Games, Media, Nutrition, Specialty |
+| Restaurant | Food, Cafes |
+| Services | Clothes, Cars, Fashion, Specialty |
+| Entertainment | (none) |
+
+Picking a category on the Store Network page shows its sub category buttons. If the Sheet uses one tab per category, add a tab named `Services` as well. To change the lists, edit `SUBS` near the top of `assets/network.js`. Stores whose `SubCategory` is blank or not in the list still appear under "All" for their category.

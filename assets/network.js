@@ -6,7 +6,7 @@ const ST=Object.fromEntries('AL Alabama|AK Alaska|AZ Arizona|AR Arkansas|CA Cali
 const norm=s=>(s||'').trim().toLowerCase(), full=s=>ST[(s||'').trim().toUpperCase()]||(s||'').trim();
 const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
-const TABS=isStore?[['retail','Retail'],['restaurant','Restaurant'],['entertainment','Entertainment']]:[['mystudio','Our Games'],['otherstudio','Other Indie Studios']];
+const TABS=isStore?[['retail','Retail'],['restaurant','Restaurant'],['entertainment','Entertainment'],['services','Services']]:[['mystudio','Our Games'],['otherstudio','Other Indie Studios']];
 const catKey=r=>norm(isStore?r.category:r.studio).replace(/[\s_-]/g,'');
 let rows=[],loc={city:'',state:''},active=TABS[0][0],searched=!isStore,picks={},U=null,note='',exact=null;
 const abbr=s=>{const t=(s||'').trim();if(!t)return'';const u=t.toUpperCase();if(ST[u])return u;return Object.keys(ST).find(k=>norm(ST[k])===norm(t))||''};
@@ -36,32 +36,37 @@ function parseCSV(t){t=t.replace(/^\uFEFF/,'');const out=[];let r=[],f='',q=fals
  if(f!==''||r.length){r.push(f);out.push(r)}
  const h=(out.shift()||[]).map(x=>x.toLowerCase().replace(/[^a-z0-9]/g,''));
  return out.filter(r=>r.some(x=>x.trim())).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])))}
-const ICON={retail:'🛍️',restaurant:'🍽️',entertainment:'🎮'};
+const ICON={retail:'🛍️',restaurant:'🍽️',entertainment:'🎮',services:'🛠️'};
+/* Sub categories per category. A store's SubCategory column must match one of these (spelling/capitals/plural do not matter). */
+const SUBS={retail:['Clothes','Weapons','Games','Media','Nutrition','Specialty'],restaurant:['Food','Cafes'],services:['Clothes','Cars','Fashion','Specialty']};
+const one=n=>n==='Services'?'service':n.toLowerCase();
+const skey=x=>(x||'').toLowerCase().replace(/[^a-z0-9]/g,'').replace(/s$/,'');
 const fetchText=async u=>{try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const t=await r.text();if(t.trim()&&!/^\s*</.test(t))return t}}catch(e){}return null};
 const pick1=(r,...k)=>{for(const x of k)if(r[x])return r[x];return''};
-const fix=r=>{r.storename=pick1(r,'storename','name','store');r.googlemapslink=pick1(r,'googlemapslink','mapslink','maps','map');r.imagelink=pick1(r,'imagelink','image','thumbnail','photo');r.notes=pick1(r,'notes','description');r.address=pick1(r,'address','streetaddress');return r};
+const fix=r=>{r.storename=pick1(r,'storename','name','store');r.googlemapslink=pick1(r,'googlemapslink','mapslink','maps','map');r.imagelink=pick1(r,'imagelink','image','thumbnail','photo');r.notes=pick1(r,'notes','description');r.address=pick1(r,'address','streetaddress');r.subcategory=pick1(r,'subcategory','subcat','sub');return r};
 async function loadRaw(){const u=isStore?S.storesCsvUrl:S.gamesCsvUrl,id=(u||'').match(/\/spreadsheets\/d\/([\w-]+)/);
  if(id){const g=tab=>`https://docs.google.com/spreadsheets/d/${id[1]}/gviz/tq?tqx=out:csv`+(tab?'&sheet='+encodeURIComponent(tab):'');
   if(isStore){
    /* Tabs named Retail / Restaurant / Entertainment. Google silently returns the FIRST sheet for an unknown tab name, so compare against a deliberately bogus tab to spot that. */
    const bogus=await fetchText(g('__none__')),texts=await Promise.all(TABS.map(([,n])=>fetchText(g(n)))),out=[],same=[];
    TABS.forEach(([k,n],i)=>{const t=texts[i];if(!t)return;if(t===bogus)same.push(n);else parseCSV(t).forEach(r=>{if(!r.category)r.category=n;out.push(r)})});
-   if(same.length&&bogus)parseCSV(bogus).forEach(r=>{if(!r.category&&same.length<3)r.category=same[0];out.push(r)});
+   if(same.length&&bogus)parseCSV(bogus).forEach(r=>{if(!r.category&&same.length<TABS.length)r.category=same[0];out.push(r)});
    if(out.length)return out}
   else{const t=await fetchText(g());if(t)return parseCSV(t)}}
  else if(u){const t=await fetchText(u);if(t)return parseCSV(t)}
  try{const r=await fetch(root.dataset.csv+'?'+Date.now());if(r.ok)return parseCSV(await r.text())}catch(e){}return[]}
 const load=async()=>(await loadRaw()).map(fix);
 document.head.append(Object.assign(document.createElement('style'),{textContent:'.cat{margin:1.6rem 0;scroll-margin-top:140px}.cat-h{font:700 1.35rem Orbitron,sans-serif;color:var(--cy);margin:0 0 .7rem;padding-bottom:.4rem;border-bottom:2px solid #ffffff22}button[aria-pressed=true]{background:linear-gradient(#35e0d0,#0f9e92)!important;border-color:#000a!important}a.chipjump{font:600 1rem Fredoka,sans-serif;color:#fff;text-decoration:none;padding:.5rem 1.1rem;border-radius:999px;border:2px solid #ffffff33;background:#ffffff10}a.chipjump:hover{background:var(--pk)}'}));
-let sel='all';
+let sel='all',subSel='';
 function renderStores(out){const total=TABS.reduce((n,[k])=>n+picks[k].length,0),bar=el('div','ntabs');bar.setAttribute('role','group');
- [['all','All',''],...TABS.map(([k,n])=>[k,n,ICON[k]+' '])].forEach(([k,n,i])=>{const c=k==='all'?total:picks[k].length,b=el('button','',`${i}${n} (${c})`);b.type='button';b.setAttribute('aria-pressed',k===sel);b.onclick=()=>{sel=k;render()};bar.append(b)});
+ [['all','All',''],...TABS.map(([k,n])=>[k,n,ICON[k]+' '])].forEach(([k,n,i])=>{const c=k==='all'?total:picks[k].length,b=el('button','',`${i}${n} (${c})`);b.type='button';b.setAttribute('aria-pressed',k===sel);b.onclick=()=>{sel=k;subSel='';render()};bar.append(b)});
  out.append(bar);
+ if(sel!=='all'&&SUBS[sel]){const sb=el('div','ntabs'),mk=(v,t)=>{const c=v?picks[sel].filter(x=>skey(x.r.subcategory)===skey(v)).length:picks[sel].length,b=el('button','',`${t} (${c})`);b.type='button';b.setAttribute('aria-pressed',skey(subSel)===skey(v));b.onclick=()=>{subSel=v;render()};sb.append(b)};sb.setAttribute('role','group');mk('','All '+TABS.find(([k])=>k===sel)[1]);SUBS[sel].forEach(v=>mk(v,v));out.append(sb)}
  TABS.filter(([k])=>sel==='all'||sel===k).forEach(([k,n])=>{
-  const list=picks[k],shown=sel==='all'?list.slice(0,6):list,s=el('section','cat');s.append(el('h3','cat-h',`${ICON[k]} ${n}`));
+  const list=sel===k&&subSel?picks[k].filter(x=>skey(x.r.subcategory)===skey(subSel)):picks[k],shown=sel==='all'?list.slice(0,6):list,s=el('section','cat');s.append(el('h3','cat-h',`${ICON[k]} ${n}`));
   if(shown.length){const l=el('div','rows');shown.forEach(x=>l.append(card(x)));s.append(l);
-   if(shown.length<list.length){const m=el('button','btn sm tl',`See all ${list.length} ${n.toLowerCase()} spots`);m.type='button';m.onclick=()=>{sel=k;render()};s.append(m)}}
-  else s.append(el('p','meta',`No ${n.toLowerCase()} partners near you yet.`),cta('recommend-store.html',`Recommend ${/^[aeiou]/i.test(n)?'an':'a'} ${n.toLowerCase()} spot`,'pk'));
+   if(shown.length<list.length){const m=el('button','btn sm tl',`See all ${list.length} ${one(n)} spots`);m.type='button';m.onclick=()=>{sel=k;subSel='';render()};s.append(m)}}
+  else s.append(el('p','meta',`No ${one(n)} partners near you yet.`),cta('recommend-store.html',`Recommend ${/^[aeiou]/i.test(one(n))?'an':'a'} ${one(n)} spot`,'pk'));
   out.append(s)})}
 function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
  if(isStore){
@@ -90,6 +95,7 @@ function card(x){const r=x.r,c=el('article','row');
  if(isStore){b.append(el('h3','',r.storename),el('p','meta',[r.city,r.state].filter(Boolean).join(', ')));
   if(exact&&x.d!=null)b.append(el('span','badge',(x.d<0.5?'Less than half a mile':x.d<10?x.d.toFixed(1)+' mi':Math.round(x.d)+' mi')+' away'));
   else if(!exact&&x.t<2)b.append(el('span','badge',x.t===0?(nkey(r.city)===nkey(loc.city)?'In your city':'In your area'):'In your state'))
+  if(r.subcategory)b.append(el('p','meta',r.category?r.category+' · '+r.subcategory:r.subcategory));
   if(r.address)b.append(el('p','meta',r.address));
   if(r.notes)b.append(el('p','',r.notes));
   const a=cta(safe(r.googlemapslink)||'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([r.storename,r.city,r.state].join(' ')),'Open in Google Maps','tl');a.target='_blank';a.rel='noopener noreferrer';b.append(a)}
@@ -111,7 +117,7 @@ const ready=load().then(d=>{rows=d;compute();render()});
 document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault();
  exact=null;loc={city:document.getElementById('city').value,state:document.getElementById('state').value};
  if(isStore&&!norm(loc.city)&&!norm(loc.state)){document.getElementById('results').textContent='Please enter a city and state first.';return}
- sel='all';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
+ sel='all';subSel='';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
 
 if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me');bt.type='button';bt.id='nearme';f.append(bt);
  const msg=t=>{note=t;searched=true;render()};
@@ -121,7 +127,7 @@ if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','N
   navigator.geolocation.getCurrentPosition(async p=>{bt.disabled=false;bt.textContent='Near Me';
    await loadCities();await ready;
    rows.forEach(r=>{if(r._c===undefined)r._c=rowC(r)});
-   exact=['you',p.coords.latitude,p.coords.longitude];U=null;loc={city:'',state:''};sel='all';searched=true;
+   exact=['you',p.coords.latitude,p.coords.longitude];U=null;loc={city:'',state:''};sel='all';subSel='';searched=true;
    note='Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()},
   e=>{bt.disabled=false;bt.textContent='Near Me';msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:0})}}
