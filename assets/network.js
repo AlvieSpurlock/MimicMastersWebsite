@@ -72,9 +72,9 @@ function score(r){const c=nkey(loc.city),s=norm(full(loc.state));
  const g=(r.optimalregion||'').split(/[|,]/).map(norm).filter(Boolean),hit=v=>v&&g.some(x=>x===v||v.includes(x)||x.includes(v));
  return[hit(s)||hit(norm(loc.city))?0:1,null]}
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-/* Closest first, but stores within 2 miles of each other swap places at random, so close neighbours each get a fair turn at the top. */
+/* Closest first, but stores within 1 mile of each other swap places at random, so close neighbours each get a fair turn at the top. */
 function fairNear(l){l=l.slice().sort((a,b)=>a.d-b.d);const out=[];let i=0;
- while(i<l.length){const grp=[l[i]];let j=i+1;while(j<l.length&&miles(l[i].r._c,l[j].r._c)<=2){grp.push(l[j]);j++}out.push(...shuffle(grp));i=j}return out}
+ while(i<l.length){const grp=[l[i]];let j=i+1;while(j<l.length&&miles(l[i].r._c,l[j].r._c)<=1){grp.push(l[j]);j++}out.push(...shuffle(grp));i=j}return out}
 function compute(){picks={};TABS.forEach(([k])=>{let l=rows.filter(r=>catKey(r)===k).map(r=>{const[t,d]=score(r);return{r,t,d}});
  if(isStore)l=l.filter(x=>x.t<2);
  picks[k]=(exact?fairNear(l.filter(x=>x.d!=null)):[0,1,2].flatMap(t=>shuffle(l.filter(x=>x.t===t)))).slice(0,isStore?30:8)});
@@ -113,16 +113,16 @@ document.getElementById('lookup').addEventListener('submit',e=>{e.preventDefault
  if(isStore&&!norm(loc.city)&&!norm(loc.state)){document.getElementById('results').textContent='Please enter a city and state first.';return}
  sel='all';searched=true;ready.then(async()=>{await resolveLoc();compute();render()})});
 
-if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','📍 Near Me');bt.type='button';bt.id='nearme';f.append(bt);
+if(isStore){const f=document.getElementById('lookup'),bt=el('button','btn tl','Near Me');bt.type='button';bt.id='nearme';f.append(bt);
  const msg=t=>{note=t;searched=true;render()};
  bt.onclick=()=>{
   if(!navigator.geolocation){msg('Your browser cannot share its location. Type your city and state instead.');return}
   bt.disabled=true;bt.textContent='Finding you…';
-  navigator.geolocation.getCurrentPosition(async p=>{bt.disabled=false;bt.textContent='📍 Near Me';
+  navigator.geolocation.getCurrentPosition(async p=>{bt.disabled=false;bt.textContent='Near Me';
    await loadCities();await ready;
    rows.forEach(r=>{if(r._c===undefined)r._c=rowC(r)});
    exact=['you',p.coords.latitude,p.coords.longitude];U=null;loc={city:'',state:''};sel='all';searched=true;
    note='Sorted by distance from where you are right now. Your location stays in your browser and is never sent or saved.';compute();render()},
-  e=>{bt.disabled=false;bt.textContent='📍 Near Me';msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
+  e=>{bt.disabled=false;bt.textContent='Near Me';msg(e&&e.code===1?'Location access was blocked, so we cannot sort by distance. Allow it in your browser, or type your city and state instead.':'We could not get your location. Type your city and state instead.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:0})}}
 })();
