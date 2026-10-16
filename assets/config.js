@@ -16,6 +16,7 @@ window.SITE={
   // If set, it is used instead of data/stores.csv / data/games.csv (falls back to them on failure).
   // Press page: Google Sheet with tabs named Videos and Press (columns: Thumbnail, Description, Date, Link). Share it as "Anyone with the link: Viewer".
   pressSheetUrl:"https://docs.google.com/spreadsheets/d/1-EAeArB_0UWxSoTxya9A-qL-SpKa5cw5RTqVdsQCdNI/edit?usp=sharing",
+  trafficUrl:"https://script.google.com/macros/s/AKfycbxQPRHkJw_xzJ2kGwJy28oEKJ_15cpd4gmDQOzhY_d9waQCcfOylBdEOehHd9ji-ihB/exec",   // Page-view counter: paste your TrafficReceiver web app URL (ends in /exec). Leave blank to count nothing.
   nearbyMiles:50,   // Store Network: how far "nearby" reaches
   aroundCornerMiles:2,   // Store Network "Around The Corner" button: how far a short drive reaches (1 to 2 miles)
   storesCsvUrl:"https://docs.google.com/spreadsheets/d/1I-3HYszsSXz9xXAMGkrx1USPITzDeKpg9hPNqrY4rl8/edit?usp=sharing",

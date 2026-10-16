@@ -68,6 +68,24 @@ Exact store positions, in order of priority: `Latitude`/`Longitude` columns, the
 
 Because the circle is small, it only counts stores with a confirmed spot: `Latitude`/`Longitude` columns, a full Google Maps link, or an `Address` filled in by StoreGeocoder. A store placed only by its city is left out, since the middle of a city could be miles from the shop. If nothing is in range, the visitor sees a message with a button to show the closest stores instead.
 
+## Traffic per page
+
+The site counts page views into a **private** Google Sheet that you own. Nothing goes to a third party. It is off until you set it up:
+
+1. Make a new, private Sheet called "Mimic Masters Traffic", open Extensions > Apps Script, paste in `TrafficReceiver.gs` (it is not part of the website, so keep it with your other Apps Script files) and follow the steps at the top of that file.
+2. Paste the web app URL (ends in `/exec`) into `trafficUrl` in `assets/config.js`.
+
+Open the **Totals** tab to read it: views per page (all time and last 7 days), views by source, and views by day. The raw **Traffic** tab has one row per day, page and source.
+
+**Tagging links.** Add `?src=name` to any link you hand out and the Sheet shows how many visits came from it, for example `store-network.html?src=flyer-lubbock-a` on a QR code, or `?src=email-warfrogs` in an email. Without a tag, the source is the site the visitor came from (`from:reddit.com`), `site` (moving around the site) or `direct`.
+
+**What it does and does not do.**
+- It counts page views, not unique people, and it still counts some bots and misses visitors who block scripts.
+- No cookies and no visitor ID. The browser only remembers that a page was counted for the rest of that visit, so a reload does not add another view.
+- It skips visitors who send Do Not Track or Global Privacy Control, automated browsers, and `localhost`.
+- To keep your own visits out, open any page once with `?notrack=1` on each of your devices. Use `?notrack=0` to count that device again.
+- Add a line to the Privacy Policy saying the site counts page views without cookies or personal identifiers.
+
 ## Store categories and sub categories
 
 `Category` is one of **Retail**, **Restaurant**, **Entertainment** or **Services**. Add a `SubCategory` column to the stores Sheet (header spelling and capitals don't matter). Allowed values:
