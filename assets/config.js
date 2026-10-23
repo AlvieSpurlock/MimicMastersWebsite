@@ -17,6 +17,13 @@ window.SITE={
   // Press page: Google Sheet with tabs named Videos and Press (columns: Thumbnail, Description, Date, Link). Share it as "Anyone with the link: Viewer".
   pressSheetUrl:"https://docs.google.com/spreadsheets/d/1-EAeArB_0UWxSoTxya9A-qL-SpKa5cw5RTqVdsQCdNI/edit?usp=sharing",
   trafficUrl:"https://script.google.com/macros/s/AKfycbxQPRHkJw_xzJ2kGwJy28oEKJ_15cpd4gmDQOzhY_d9waQCcfOylBdEOehHd9ji-ihB/exec",   // Page-view counter: paste your TrafficReceiver web app URL (ends in /exec). Leave blank to count nothing.
+  // Landing page "Platform Progress" block. ios.status and ios.asOf are plain text you edit as things change.
+  // Android shows a live tester count from a Google Sheet: the number of non-empty cells in testersColumn (blank cells are ignored). Share that Sheet as "Anyone with the link: Viewer".
+  // When stores.ios / stores.android above hold a real store link, that platform switches to "Available now", and the block hides once both are live.
+  platformProgress:{
+    ios:{status:"Waiting for Review", asOf:"October 21st"},
+    android:{testersSheetUrl:"https://docs.google.com/spreadsheets/d/1oUBcPp-Il2eZvQ3F6S6aGnhL4-rkJzHZP3n-bytQJ6I/edit?usp=sharing", testersColumn:"B", testersGoal:30, goalReachedStatus:"Tester goal reached. Waiting on Google Play"}
+  },
   nearbyMiles:50,   // Store Network: how far "nearby" reaches
   aroundCornerMiles:2,   // Store Network "Around The Corner" button: how far a short drive reaches (1 to 2 miles)
   storesCsvUrl:"https://docs.google.com/spreadsheets/d/1I-3HYszsSXz9xXAMGkrx1USPITzDeKpg9hPNqrY4rl8/edit?usp=sharing",

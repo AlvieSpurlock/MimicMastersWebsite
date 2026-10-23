@@ -54,6 +54,14 @@ Share the Sheet as **Anyone with the link: Viewer**. Tabs:
 
 To use a different Sheet or tab name, add `donationsSheetUrl:"https://docs.google.com/spreadsheets/d/.../edit"` and/or `contributionsSheetUrl:"https://docs.google.com/spreadsheets/d/.../edit"` and/or `donationsContribTab:"Players"` to `assets/config.js`.
 
+## Platform Progress (landing page)
+
+`index.html` shows a "Platform Progress" block, filled by `assets/progress.js` from `platformProgress` in `assets/config.js`.
+
+- **iOS:** plain text you edit by hand: `ios.status` (for example "Waiting for Review") and `ios.asOf` (for example "October 21st").
+- **Android:** a live count of testers from the testers Google Sheet (`android.testersSheetUrl`). It counts the non-empty cells in `testersColumn` (B, the email column), so empty rows are ignored, and compares it to `testersGoal` (30). It reads only the count, never the emails. The Sheet must be shared as "Anyone with the link: Viewer". Repeated emails are counted each time. If the count can't load, the tile says "Testers wanted" and shows no number.
+- When `stores.ios` / `stores.android` hold a real App Store / Google Play link, that tile switches to "Available now". When both are live the whole block hides.
+
 ## Store Network: "Near Me" button
 
 The search opens with three buttons in a row: **Near Me**, **Around The Corner** and **Custom**. **Custom** swaps them for the City and State boxes and **Find Stores**, with a **Back** button centred underneath that returns to the three. **Near Me** asks the browser for the visitor's exact location (the visitor must allow it), then lists only the stores in the visitor's own town, closest first. The town is the nearest one in `data/cities-us.json` within 15 miles, worked out in the browser; on the edge of a big city it can pick the neighbouring town, and **Custom** fixes that. Stores within 1 mile of each other are shuffled at random on each search so close neighbours share the top spot fairly. The location stays in the browser and is never sent or saved. **Custom** shows only stores in the town typed (no distances, since a town has no exact point).
