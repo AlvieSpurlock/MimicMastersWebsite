@@ -1,4 +1,4 @@
-/* Play Free page: loads the full Unity WebGL build, gives a few minutes of free play,
+/* Free Demo page: loads the Unity WebGL build as a timed demo (a few minutes),
    then shows the store panel (free mobile stores first, itch.io last).
    Settings live in assets/config.js → stores, itchPrice, webPlay. Nothing to edit here. */
 (function () {
@@ -96,7 +96,7 @@
     if (!document.hidden) played += 1;          // only count time the page is on screen
     if (Math.floor(played) % 10 === 0) save(played);
     var left = Math.max(0, Math.ceil(limit - played));
-    timeLeft.textContent = left > 0 ? Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " of free play left" : "Free play is over: finish your round!";
+    timeLeft.textContent = left > 0 ? Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " left in the demo" : "The demo is over: finish your round!";
     if (played >= limit) {
       if (!overAt) { overAt = played; toast.hidden = false; }
       if (played - overAt >= W.graceSeconds) showPanel();
@@ -114,7 +114,7 @@
     if (timer) clearInterval(timer);
     save(Math.max(played, limit));
     toast.hidden = true;
-    timeLeft.textContent = "Thanks for playing!";
+    timeLeft.textContent = "Thanks for trying the demo!";
     panel.hidden = false;
     stage.classList.add("is-over");
     if (unity) { try { unity.Quit(); } catch (e) {} }   // stop the game and its sound behind the panel

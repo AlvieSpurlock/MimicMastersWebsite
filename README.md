@@ -123,7 +123,7 @@ on the home page shows the tools behind Mimic Masters.
 Update it there and both sites show the same numbers. If it can't be reached, this site falls back to
 its own copy in `data/mimic-masters.csv`.
 
-## Play Free (play.html)
+## Free Demo (play.html)
 
-The full game in the browser for 5 minutes, then a panel pointing to the free Google Play and App Store
+A 5-minute demo in the browser, then a panel pointing to the free Google Play and App Store
 versions first and itch.io last. See `play/README.md` for adding your web build.

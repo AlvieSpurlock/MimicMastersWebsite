@@ -14,12 +14,12 @@ window.SITE={
     itch:"https://marchharegames.itch.io/mimic-masters"   // the paid, ad-free version
   },
   itchPrice:"$2.99",
-  // "Play Free" page (play.html): the FULL game in the browser for a few minutes, then the store panel.
+  // "Free Demo" page (play.html): the game in the browser as a timed demo, then the store panel.
   // Put your Unity WebGL build's Build folder at play/Build (see play/README.md).
   webPlay:{
     buildName:"MimicMasters",   // the start of your build's file names, e.g. MimicMasters.loader.js
     fileSuffix:"",              // "" if Compression is Disabled; ".unityweb" with Decompression Fallback; ".gz" or ".br" otherwise
-    freeMinutes:5,              // minutes of free play before the store panel
+    freeMinutes:5,              // length of the demo in minutes
     graceSeconds:60,            // after time is up, how long the current round gets to finish
     aspect:"9 / 16"             // the game's shape: "9 / 16" portrait, "16 / 9" landscape
   },
