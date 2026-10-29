@@ -48,8 +48,16 @@ async function load(){
  /* 2) fallback: hand-typed Estimate tab */
  if(!est&&et&&et!==bt){const er=parseCSV(et);
   if(er.length&&!('charity' in er[0]))for(const r of er){const a=num(r.amount||r.estimate||r.estimatedraised);if(a>0){est={usd:a,asof:r.asof||r.date||''};break}}}
+ /* CSV route: ../data/mimic-masters.csv (Month, Platform, Gross, PlatformCut, Donated, Charity, Receipt, Notes).
+    When it lists any donations it becomes the source for "Donated so far", so a donation is never counted twice. */
+ const csvUrl=(window.SITE||{}).transparencyCsv||'../data/mimic-masters.csv';
+ const csvT=await getText(csvUrl);
+ let okC=false;
+ if(csvT){okC=true;const cr=[];parseCSV(csvT).forEach((r,i)=>{const amt=num(r.donated);if(!(amt>0))return;const ch=r.charity||'ASAN';if(!CH.includes(norm(ch)))return;
+   const m=/^(\d{4})[-/.](\d{1,2})/.exec(r.month||'');cr.push({name:ch,cents:Math.round(amt*100),date:m?`${m[1]}-${m[2].padStart(2,'0')}-01`:(r.month||''),i})});
+  if(cr.length){rows.length=0;rows.push(...cr)}}
  rows.sort((a,b)=>((toDate(b.date)||0)-(toDate(a.date)||0))||b.i-a.i);
- return{rows,est,okL:!!lt,okE:!!(ct||cb)||!!est}}
+ return{rows,est,okL:!!lt||okC,okE:!!(ct||cb)||!!est}}
 
 
 const PH={

@@ -32,6 +32,9 @@ window.SITE={
   // Use the name exactly as you type it in the ledger's Charity column (capitals and punctuation do not matter). A list works too: ["ASAN","Autistic Self Advocacy Network"]
   donationsSheetUrl:"https://docs.google.com/spreadsheets/d/1dxzL7XYXNb0fk4bb9b4GMNO7BqOpGALekMsCOH7xLz0/edit?usp=sharing",
   donationCharity:["ASAN","Autistic Self Advocacy Network"],
+  // Actual monthly payouts (Google Play, App Store, itch.io): the shared CSV in the main site's data folder.
+  // When it lists donations, it is used for "Donated so far" instead of the ledger Sheet above.
+  transparencyCsv:"../data/mimic-masters.csv",
   // Estimated raised: the Google Sheet the games report to (tab "Players").
   contributionsSheetUrl:"https://docs.google.com/spreadsheets/d/1KCmfXcqwW6QI4aUAgZk9iZ3ofzt2U2F8g2hDD4U6YSc/edit?usp=sharing"
 };

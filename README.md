@@ -2,7 +2,9 @@
 
 Official website for **Mimic Masters**, hosted on GitHub Pages.
 
-Live site: https://alviespurlock.github.io/MimicMastersWebsite/
+Live site: https://alviespurlock.github.io/MadTeaPartyDevelopment/mimic-masters/
+
+This folder is part of the Mad Tea Party Development site. The privacy-sync workflow now lives at the repo root in `.github/workflows/sync-privacy.yml` and runs inside this folder.
 
 ## Pages (31)
 
@@ -42,6 +44,10 @@ Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 Forms embed Google Forms via their responder links. They must not require sign-in: no file uploads, "Limit to 1 response" off, email collection set to "Do not collect" or "Responder input".
 
 If you edit locally, **Pull before you Push**, because the sync bot commits to this repo.
+
+## Transparency (Made / Given / Kept)
+
+`transparency.html` shows month by month what Mimic Masters made after platform cuts, what went to ASAN and what was kept. The numbers come from **`../data/mimic-masters.csv`** in the main site (one row per platform per month: `Month, Platform, Gross, PlatformCut, Donated, Charity, Receipt, Notes`). Platforms: Google Play, App Store, itch.io. The Charity page also shows a Made / Given / Kept summary from the same file, and once the CSV lists any donations it is used for "Donated so far" instead of the ledger Sheet. See the main site's README for how to fill the CSV in.
 
 ## Donations (Charity page and Landing page)
 
