@@ -1,0 +1,10 @@
+/* Return bar for sites that don't load product.css (Mimic Masters). */
+.mtp-crumb { background: #07060a; border-bottom: 1px solid rgba(255,255,255,.08); font: 500 .9rem system-ui, sans-serif; position: relative; z-index: 60; }
+.mtp-crumb .in { max-width: 1160px; margin: 0 auto; padding: 0 20px; min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.mtp-crumb a { text-decoration: none; }
+.mtp-crumb .home { display: inline-flex; align-items: center; gap: 10px; color: #f1e6cc; font-family: Georgia, serif; font-size: 1.05rem; line-height: 1; }
+.mtp-crumb .home img { width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 0 10px rgba(176,136,255,.45); }
+.mtp-crumb .home small { display: block; font-family: system-ui, sans-serif; font-size: .58rem; letter-spacing: .3em; color: #8dffc1; margin-top: 2px; }
+.mtp-crumb .back { padding: 6px 14px; border-radius: 999px; color: #fff; font-weight: 700; font-size: .85rem; background: rgba(176,136,255,.18); border: 1px solid rgba(176,136,255,.55); white-space: nowrap; }
+.mtp-crumb .back:hover { background: rgba(176,136,255,.35); }
+@media (max-width: 480px) { .mtp-crumb .home span { display: none; } }

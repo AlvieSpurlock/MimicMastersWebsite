@@ -2,9 +2,7 @@
 
 Official website for **Mimic Masters**, hosted on GitHub Pages.
 
-Live site: https://alviespurlock.github.io/MadTeaPartyDevelopment/mimic-masters/
-
-This folder is part of the Mad Tea Party Development site. The privacy-sync workflow now lives at the repo root in `.github/workflows/sync-privacy.yml` and runs inside this folder.
+Live site: https://alviespurlock.github.io/MimicMastersWebsite/
 
 ## Pages (31)
 
@@ -44,10 +42,6 @@ This folder is part of the Mad Tea Party Development site. The privacy-sync work
 Forms embed Google Forms via their responder links. They must not require sign-in: no file uploads, "Limit to 1 response" off, email collection set to "Do not collect" or "Responder input".
 
 If you edit locally, **Pull before you Push**, because the sync bot commits to this repo.
-
-## Transparency (Made / Given / Kept)
-
-`transparency.html` shows month by month what Mimic Masters made after platform cuts, what went to ASAN and what was kept. The numbers come from **`../data/mimic-masters.csv`** in the main site (one row per platform per month: `Month, Platform, Gross, PlatformCut, Donated, Charity, Receipt, Notes`). Platforms: Google Play, App Store, itch.io. The Charity page also shows a Made / Given / Kept summary from the same file, and once the CSV lists any donations it is used for "Donated so far" instead of the ledger Sheet. See the main site's README for how to fill the CSV in.
 
 ## Donations (Charity page and Landing page)
 
@@ -112,3 +106,24 @@ Open the **Totals** tab to read it: views per page (all time and last 7 days), v
 | Entertainment | (none) |
 
 Picking a category on the Store Network page shows its sub category buttons. If the Sheet uses one tab per category, add a tab named `Services` as well. To change the lists, edit `SUBS` near the top of `assets/network.js`. Stores whose `SubCategory` is blank or not in the list still appear under "All" for their category.
+
+
+## Part of Mad Tea Party Development
+
+This site runs on its own, but it's part of the studio: the top bar and the "From the Studio"
+footer column link to the March Hare Games page, the Game Dev Kits, Queens Court and Looking Glass
+on https://alviespurlock.github.io/MadTeaPartyDevelopment/. The "Brewed With Our Own Tools" section
+on the home page shows the tools behind Mimic Masters.
+
+## Transparency (Made / Given / Kept)
+
+`transparency.html` and the Charity page read the studio's one ledger:
+`https://alviespurlock.github.io/MadTeaPartyDevelopment/data/mimic-masters.csv`
+(one row per platform per month: `Month, Platform, Gross, PlatformCut, Donated, Charity, Receipt, Notes`).
+Update it there and both sites show the same numbers. If it can't be reached, this site falls back to
+its own copy in `data/mimic-masters.csv`.
+
+## Play Free (play.html)
+
+The full game in the browser for 5 minutes, then a panel pointing to the free Google Play and App Store
+versions first and itch.io last. See `play/README.md` for adding your web build.
