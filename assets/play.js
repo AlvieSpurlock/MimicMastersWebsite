@@ -55,6 +55,32 @@
 
   // ---- Already used the free minutes on this browser? ----
   var played = load();
+
+  // ---- A fresh demo every day ----
+  // The 10 minutes reset at midnight (the visitor's local time), so anyone can come back tomorrow.
+  var DAYKEY = "mm_demo_day";
+  var d0 = new Date();
+  var today = d0.getFullYear() + "-" + String(d0.getMonth() + 1).padStart(2, "0") + "-" + String(d0.getDate()).padStart(2, "0");
+  var lastDay = "";
+  try { lastDay = localStorage.getItem(DAYKEY) || ""; } catch (e) {}
+  if (lastDay !== today) {
+    played = 0; save(0);
+    try { localStorage.setItem(DAYKEY, today); localStorage.removeItem("mm_demo_meta"); } catch (e) {}
+  }
+
+  // ---- Developer redo: open play.html?redo=<code> to reset the demo (code set in config.js → webPlay.redoCode) ----
+  try {
+    var qs = new URLSearchParams(location.search);
+    if (W.redoCode && qs.get("redo") === W.redoCode) {
+      played = 0; save(0);
+      qs.delete("redo");
+      history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs : "") + location.hash);
+      toast.textContent = "Demo reset (developer redo)";
+      toast.hidden = false;
+      setTimeout(function () { toast.hidden = true; }, 3500);
+    }
+  } catch (e) {}
+
   if (played >= limit) { showPanel(); return; }
 
   // ---- Load the build ----
@@ -148,6 +174,12 @@
     save(Math.max(played, limit));
     toast.hidden = true;
     timeLeft.textContent = "Thanks for trying the demo!";
+    if (!panel.querySelector(".mm-again")) {
+      var again = document.createElement("p");
+      again.className = "mm-again";
+      again.textContent = "Your free demo resets every day. Come back tomorrow for another " + W.freeMinutes + " minutes.";
+      panel.appendChild(again);
+    }
     panel.hidden = false;
     stage.classList.add("is-over");
     if (unity) { try { unity.Quit(); } catch (e) {} }   // stop the game and its sound behind the panel

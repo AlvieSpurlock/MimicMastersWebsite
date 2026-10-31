@@ -37,6 +37,7 @@ Ignore Unity's index.html and TemplateData; play.html replaces them.
 ## Notes
 
 - Only time the page is on screen counts, and it's remembered across reloads in that browser.
+- The demo resets every day at midnight (the visitor's local time), so anyone can play again tomorrow.
 - The same build can go on itch.io with no limit: the limit only exists on this page.
 - Point the flier QR code at play.html to drop people straight into the game, or at the
   home page, which now has a "▶ Try the Free Demo" button at the top.

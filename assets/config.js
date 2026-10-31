@@ -24,7 +24,8 @@ window.SITE={
     gzip:true,                  // the split pieces are gzipped and unpacked in the browser (smaller downloads)
     parts:{data:5, wasm:1},     // big files are split into numbered pieces; how many of each
     productName:"Mimic Masters Memory Game", productVersion:"1.4.0",   // must match the Unity build (keeps players' saves)
-    freeMinutes:10,             // length of the demo in minutes
+    freeMinutes:10,             // length of the demo in minutes (resets every day)
+    redoCode:"mtp-bc90b7a1",       // developer reset: open play.html?redo=mtp-bc90b7a1 to get a fresh demo
     aspect:"9 / 16"             // the game's shape: "9 / 16" portrait, "16 / 9" landscape
   },
 
