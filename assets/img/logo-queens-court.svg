@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d27a"/><stop offset=".6" stop-color="#E3B448"/><stop offset="1" stop-color="#a87a1c"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3B448"/><stop offset="1" stop-color="#8a6214"/></linearGradient>
+  </defs>
+  <path d="M8 22 L19 34 L32 12 L45 34 L56 22 L51 46 H13 Z" fill="url(#g)" stroke="#5a3d0c" stroke-width="1.2" stroke-linejoin="round"/>
+  <circle cx="8" cy="20" r="4" fill="url(#g)" stroke="#5a3d0c" stroke-width="1"/>
+  <circle cx="32" cy="10" r="4" fill="url(#g)" stroke="#5a3d0c" stroke-width="1"/>
+  <circle cx="56" cy="20" r="4" fill="url(#g)" stroke="#5a3d0c" stroke-width="1"/>
+  <rect x="12" y="46" width="40" height="8" rx="2" fill="url(#b)" stroke="#5a3d0c" stroke-width="1.2"/>
+  <path d="M32 42 C24 36 21 32 21 28.5 C21 25.5 23.3 23.5 26 23.5 C28.4 23.5 30.6 25 32 27 C33.4 25 35.6 23.5 38 23.5 C40.7 23.5 43 25.5 43 28.5 C43 32 40 36 32 42 Z" fill="#C8102E" stroke="#6e0717" stroke-width="1"/>
+</svg>
