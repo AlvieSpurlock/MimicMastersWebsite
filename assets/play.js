@@ -3,10 +3,11 @@
    Settings live in assets/config.js → stores, itchPrice, webPlay. Nothing to edit here. */
 (function () {
   var S = window.SITE || {};
-  var W = Object.assign({ buildName: "MimicMasters", fileSuffix: "", freeMinutes: 5, graceSeconds: 60, aspect: "9 / 16" }, S.webPlay || {});
+  var W = Object.assign({ buildName: "MimicMasters", fileSuffix: "", freeMinutes: 10, aspect: "9 / 16" }, S.webPlay || {});
   var stores = S.stores || {};
   var KEY = "mm_free_play_seconds";
   var limit = W.freeMinutes * 60;
+  document.querySelectorAll("[data-mm-minutes]").forEach(function (e) { e.textContent = W.freeMinutes; });
 
   var stage = document.getElementById("mm-stage");
   var canvas = document.getElementById("mm-canvas");
@@ -57,28 +58,66 @@
   if (played >= limit) { showPanel(); return; }
 
   // ---- Load the build ----
-  var base = "play/Build/" + W.buildName;
+  // buildBase: where the Build folder lives (another site on the same domain works too).
+  // parts: files too big for GitHub are stored as numbered pieces (name.part01, name.part02, ...)
+  //        and joined back together here, in the visitor's browser.
+  var buildBase = (W.buildBase || "play/Build/").replace(/\/?$/, "/");
+  var base = buildBase + W.buildName;
   var sfx = W.fileSuffix || "";
+  var parts = W.parts || {};
   var unity = null, running = false, timer = null, overAt = 0, shown = false;
+  var fail = function () { stage.classList.add("is-missing"); missing.hidden = false; startBtn.hidden = true; };
+
+  // Download every piece of the split files (showing progress), then hand them to Unity as one file each.
+  function joinParts(onProgress) {
+    var jobs = [];
+    [["data", "application/octet-stream"], ["wasm", "application/wasm"]].forEach(function (f) {
+      var n = parts[f[0]] || 0;
+      for (var i = 1; i <= n; i++) jobs.push({ key: f[0], type: f[1], url: base + "." + f[0] + (W.gzip ? ".gz" : sfx) + ".part" + String(i).padStart(2, "0") });
+    });
+    if (!jobs.length) return Promise.resolve({});
+    if (W.gzip && typeof DecompressionStream === "undefined") return Promise.reject(new Error("This browser can't unpack the demo"));
+    var done = 0;
+    return Promise.all(jobs.map(function (j) {
+      return fetch(j.url).then(function (r) { if (!r.ok) throw new Error(j.url); return r.blob(); })
+        .then(function (b) { done++; onProgress(done / jobs.length); j.blob = b; return j; });
+    })).then(function (list) {
+      // Join each file's pieces; if they were gzipped, unpack them in the browser.
+      var out = {};
+      return Promise.all(["data", "wasm"].map(function (key) {
+        var mine = list.filter(function (j) { return j.key === key; });
+        if (!mine.length) return null;
+        var joined = new Blob(mine.map(function (j) { return j.blob; }));
+        var ready = W.gzip
+          ? new Response(joined.stream().pipeThrough(new DecompressionStream("gzip"))).blob()
+          : Promise.resolve(joined);
+        return ready.then(function (b) { out[key] = URL.createObjectURL(new Blob([b], { type: mine[0].type })); });
+      })).then(function () { return out; });
+    });
+  }
 
   startBtn.addEventListener("click", function () {
     startBtn.disabled = true;
     startBtn.textContent = "Loading…";
+    var hasParts = (parts.data || 0) + (parts.wasm || 0) > 0;
     var s = document.createElement("script");
     s.src = base + ".loader.js";
-    s.onerror = function () { stage.classList.add("is-missing"); missing.hidden = false; startBtn.hidden = true; };
+    s.onerror = fail;
     s.onload = function () {
-      createUnityInstance(canvas, {
-        dataUrl: base + ".data" + sfx,
-        frameworkUrl: base + ".framework.js" + sfx,
-        codeUrl: base + ".wasm" + sfx,
-        streamingAssetsUrl: "play/StreamingAssets",
-        companyName: "March Hare Games",
-        productName: "Mimic Masters",
-        productVersion: "web"
-      }, function (p) { bar.style.width = Math.round(p * 100) + "%"; })
+      joinParts(function (p) { bar.style.width = Math.round(p * 80) + "%"; })
+      .then(function (joined) {
+        return createUnityInstance(canvas, {
+          dataUrl: joined.data || base + ".data" + sfx,
+          frameworkUrl: base + ".framework.js" + sfx,
+          codeUrl: joined.wasm || base + ".wasm" + sfx,
+          streamingAssetsUrl: W.streamingAssets || buildBase.replace(/Build\/$/, "StreamingAssets"),
+          companyName: W.companyName || "March Hare Games",
+          productName: W.productName || "Mimic Masters",
+          productVersion: W.productVersion || "web"
+        }, function (p) { bar.style.width = Math.round((hasParts ? 80 : 0) + p * (hasParts ? 20 : 100)) + "%"; });
+      })
       .then(function (inst) { unity = inst; stage.classList.add("is-running"); startClock(); })
-      .catch(function () { stage.classList.add("is-missing"); missing.hidden = false; startBtn.hidden = true; });
+      .catch(fail);
     };
     document.body.appendChild(s);
   });
@@ -96,16 +135,10 @@
     if (!document.hidden) played += 1;          // only count time the page is on screen
     if (Math.floor(played) % 10 === 0) save(played);
     var left = Math.max(0, Math.ceil(limit - played));
-    timeLeft.textContent = left > 0 ? Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " left in the demo" : "The demo is over: finish your round!";
-    if (played >= limit) {
-      if (!overAt) { overAt = played; toast.hidden = false; }
-      if (played - overAt >= W.graceSeconds) showPanel();
-    }
+    timeLeft.textContent = Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " left in the demo";
+    if (played >= limit) showPanel();   // time's up: the demo ends right away
   }
 
-  // Optional: if the game calls window.MMRoundEnded() (see play/unity-optional), the panel
-  // shows the moment the round in progress ends, instead of after the grace time.
-  window.MMRoundEnded = function () { if (played >= limit) showPanel(); };
 
   function showPanel() {
     if (shown) return;

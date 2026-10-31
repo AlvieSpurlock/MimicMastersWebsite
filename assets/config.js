@@ -17,12 +17,17 @@ window.SITE={
   // "Free Demo" page (play.html): the game in the browser as a timed demo, then the store panel.
   // Put your Unity WebGL build's Build folder at play/Build (see play/README.md).
   webPlay:{
-    buildName:"MimicMasters",   // the start of your build's file names, e.g. MimicMasters.loader.js
-    fileSuffix:"",              // "" if Compression is Disabled; ".unityweb" with Decompression Fallback; ".gz" or ".br" otherwise
-    freeMinutes:5,              // length of the demo in minutes
-    graceSeconds:60,            // after time is up, how long the current round gets to finish
+    buildBase:"https://alviespurlock.github.io/MadTeaPartyDevelopment/mimic-masters/play/Build/play/Build/",   // where the Build folder lives
+    streamingAssets:"https://alviespurlock.github.io/MadTeaPartyDevelopment/mimic-masters/play/Build/play/StreamingAssets",
+    buildName:"MimicMasters",   // the start of the build's file names
+    fileSuffix:"",              // "" for uncompressed loader/framework files (what's uploaded now)
+    gzip:true,                  // the split pieces are gzipped and unpacked in the browser (smaller downloads)
+    parts:{data:5, wasm:1},     // big files are split into numbered pieces; how many of each
+    productName:"Mimic Masters Memory Game", productVersion:"1.4.0",   // must match the Unity build (keeps players' saves)
+    freeMinutes:10,             // length of the demo in minutes
     aspect:"9 / 16"             // the game's shape: "9 / 16" portrait, "16 / 9" landscape
   },
+
   // Optional live data: Google Sheets > File > Share > Publish to web > CSV link.
   // If set, it is used instead of data/stores.csv / data/games.csv (falls back to them on failure).
   // Press page: Google Sheet with tabs named Videos and Press (columns: Thumbnail, Description, Date, Link). Share it as "Anyone with the link: Viewer".

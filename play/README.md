@@ -1,6 +1,6 @@
 # Free Demo (play.html)
 
-A 5-minute demo in the browser, then a panel pointing to the free
+A 10-minute demo in the browser. When the time is up the game stops right away and a panel pointing to the free
 Google Play and App Store versions first, and itch.io ($2.99, no ads) last.
 The timer and panel live on the web page, so the game itself needs no changes.
 
@@ -33,13 +33,6 @@ Ignore Unity's index.html and TemplateData; play.html replaces them.
 - `stores.ios` / `stores.android`: paste the store links when the listings go live.
   Until then those buttons say "Free · coming soon (join the testers)" and open the tester pages.
 - `stores.itch` and `itchPrice` are already set.
-
-## Optional: end the demo exactly at the end of a round
-
-Without this, when time runs out players get `graceSeconds` (60) to finish their round.
-To show the panel the moment the round ends instead, copy the two files in
-`unity-optional/` into your Unity project (the .jslib under Assets/Plugins/WebGL)
-and call `MMWebPage.RoundEnded();` where a round finishes.
 
 ## Notes
 
