@@ -1,6 +1,6 @@
 # Free Demo (play.html)
 
-A 10-minute demo in the browser. When the time is up the game stops right away and a panel pointing to the free
+A 10-minute demo in the browser, then a panel pointing to the free
 Google Play and App Store versions first, and itch.io ($2.99, no ads) last.
 The timer and panel live on the web page, so the game itself needs no changes.
 
@@ -34,10 +34,16 @@ Ignore Unity's index.html and TemplateData; play.html replaces them.
   Until then those buttons say "Free · coming soon (join the testers)" and open the tester pages.
 - `stores.itch` and `itchPrice` are already set.
 
+## Optional: end the demo exactly at the end of a round
+
+Without this, when time runs out players get `graceSeconds` (60) to finish their round.
+To show the panel the moment the round ends instead, copy the two files in
+`unity-optional/` into your Unity project (the .jslib under Assets/Plugins/WebGL)
+and call `MMWebPage.RoundEnded();` where a round finishes.
+
 ## Notes
 
 - Only time the page is on screen counts, and it's remembered across reloads in that browser.
-- The demo resets every day at midnight (the visitor's local time), so anyone can play again tomorrow.
 - The same build can go on itch.io with no limit: the limit only exists on this page.
 - Point the flier QR code at play.html to drop people straight into the game, or at the
   home page, which now has a "▶ Try the Free Demo" button at the top.

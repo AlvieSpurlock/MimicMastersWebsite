@@ -3,7 +3,7 @@
    Settings live in assets/config.js → stores, itchPrice, webPlay. Nothing to edit here. */
 (function () {
   var S = window.SITE || {};
-  var W = Object.assign({ buildName: "MimicMasters", fileSuffix: "", freeMinutes: 10, aspect: "9 / 16" }, S.webPlay || {});
+  var W = Object.assign({ buildName: "MimicMasters", fileSuffix: "", freeMinutes: 5, graceSeconds: 60, aspect: "9 / 16" }, S.webPlay || {});
   var stores = S.stores || {};
   var KEY = "mm_free_play_seconds";
   var limit = W.freeMinutes * 60;
@@ -55,32 +55,6 @@
 
   // ---- Already used the free minutes on this browser? ----
   var played = load();
-
-  // ---- A fresh demo every day ----
-  // The 10 minutes reset at midnight (the visitor's local time), so anyone can come back tomorrow.
-  var DAYKEY = "mm_demo_day";
-  var d0 = new Date();
-  var today = d0.getFullYear() + "-" + String(d0.getMonth() + 1).padStart(2, "0") + "-" + String(d0.getDate()).padStart(2, "0");
-  var lastDay = "";
-  try { lastDay = localStorage.getItem(DAYKEY) || ""; } catch (e) {}
-  if (lastDay !== today) {
-    played = 0; save(0);
-    try { localStorage.setItem(DAYKEY, today); localStorage.removeItem("mm_demo_meta"); } catch (e) {}
-  }
-
-  // ---- Developer redo: open play.html?redo=<code> to reset the demo (code set in config.js → webPlay.redoCode) ----
-  try {
-    var qs = new URLSearchParams(location.search);
-    if (W.redoCode && qs.get("redo") === W.redoCode) {
-      played = 0; save(0);
-      qs.delete("redo");
-      history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs : "") + location.hash);
-      toast.textContent = "Demo reset (developer redo)";
-      toast.hidden = false;
-      setTimeout(function () { toast.hidden = true; }, 3500);
-    }
-  } catch (e) {}
-
   if (played >= limit) { showPanel(); return; }
 
   // ---- Load the build ----
@@ -161,10 +135,16 @@
     if (!document.hidden) played += 1;          // only count time the page is on screen
     if (Math.floor(played) % 10 === 0) save(played);
     var left = Math.max(0, Math.ceil(limit - played));
-    timeLeft.textContent = Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " left in the demo";
-    if (played >= limit) showPanel();   // time's up: the demo ends right away
+    timeLeft.textContent = left > 0 ? Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " left in the demo" : "The demo is over: finish your round!";
+    if (played >= limit) {
+      if (!overAt) { overAt = played; toast.hidden = false; }
+      if (played - overAt >= W.graceSeconds) showPanel();
+    }
   }
 
+  // Optional: if the game calls window.MMRoundEnded() (see play/unity-optional), the panel
+  // shows the moment the round in progress ends, instead of after the grace time.
+  window.MMRoundEnded = function () { if (played >= limit) showPanel(); };
 
   function showPanel() {
     if (shown) return;
@@ -174,12 +154,6 @@
     save(Math.max(played, limit));
     toast.hidden = true;
     timeLeft.textContent = "Thanks for trying the demo!";
-    if (!panel.querySelector(".mm-again")) {
-      var again = document.createElement("p");
-      again.className = "mm-again";
-      again.textContent = "Your free demo resets every day. Come back tomorrow for another " + W.freeMinutes + " minutes.";
-      panel.appendChild(again);
-    }
     panel.hidden = false;
     stage.classList.add("is-over");
     if (unity) { try { unity.Quit(); } catch (e) {} }   // stop the game and its sound behind the panel
